@@ -1243,12 +1243,6 @@ def _build_openclaw_settings_bundle(
                         "model": {"primary": "{{OPENCLAW_PRIMARY_MODEL}}"},
                         "identity": {"theme": dialogue_contracts["exmachina-main"]["theme"]},
                         "sandbox": {"mode": "off"},
-                        "metadata": {
-                            "mode": "lite",
-                            "primary_link_body": primary_body.name,
-                            "support_link_bodies": [body.name for body in support_bodies],
-                            "dialogue_contract": dialogue_contracts["exmachina-main"],
-                        },
                     }
                 ],
             }
@@ -1270,7 +1264,7 @@ def _build_openclaw_settings_bundle(
                 "defaults": {
                     "workspace": workspace_value,
                     "model": {"primary": "{{OPENCLAW_FAST_MODEL}}"},
-                    "sandbox": {"mode": "agent"},
+                    "sandbox": {"mode": "non-main", "scope": "agent"},
                 },
                 "list": [
                     {
@@ -1279,23 +1273,13 @@ def _build_openclaw_settings_bundle(
                         "model": {"primary": "{{OPENCLAW_FAST_MODEL}}"},
                         "identity": {"theme": dialogue_contracts["exmachina-main"]["theme"]},
                         "sandbox": {"mode": "off"},
-                        "metadata": {
-                            "mode": "full",
-                            "role": "conductor",
-                            "dialogue_contract": dialogue_contracts["exmachina-main"],
-                        },
                     },
                     {
                         "id": "exmachina-primary",
                         "name": f"ExMachina 主连结体 · {primary_body.name}",
                         "model": {"primary": "{{OPENCLAW_PRIMARY_MODEL}}"},
                         "identity": {"theme": dialogue_contracts["exmachina-primary"]["theme"]},
-                        "sandbox": {"mode": "agent"},
-                        "metadata": {
-                            "mode": "full",
-                            "role": "primary-link-body",
-                            "dialogue_contract": dialogue_contracts["exmachina-primary"],
-                        },
+                        "sandbox": {"mode": "all", "scope": "agent"},
                     },
                     *[
                         {
@@ -1303,12 +1287,7 @@ def _build_openclaw_settings_bundle(
                             "name": f"ExMachina 协作连结体 · {body.name}",
                             "model": {"primary": "{{OPENCLAW_SUPPORT_MODEL}}"},
                             "identity": {"theme": dialogue_contracts[f"exmachina-support-{index}"]["theme"]},
-                            "sandbox": {"mode": "agent"},
-                            "metadata": {
-                                "mode": "full",
-                                "role": "support-link-body",
-                                "dialogue_contract": dialogue_contracts[f"exmachina-support-{index}"],
-                            },
+                            "sandbox": {"mode": "all", "scope": "agent"},
                         }
                         for index, body in enumerate(support_bodies, start=1)
                     ],

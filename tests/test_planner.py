@@ -31,7 +31,8 @@ class PlannerTests(unittest.TestCase):
         self.assertTrue(plan.openclaw_settings_bundle.supports_direct_import)
         self.assertEqual(plan.openclaw_settings_bundle.default_entry_agent_id, "exmachina-main")
         main_agent = plan.openclaw_settings_bundle.settings_patch["agents"]["list"][0]
-        self.assertIn("dialogue_contract", main_agent["metadata"])
+        self.assertNotIn("metadata", main_agent)
+        self.assertEqual(main_agent["sandbox"]["mode"], "off")
         self.assertIn("子个体", main_agent["identity"]["theme"])
         self.assertIn("少女式终端", main_agent["identity"]["theme"])
         self.assertIn("已接收", main_agent["identity"]["theme"])
@@ -74,8 +75,11 @@ class PlannerTests(unittest.TestCase):
         self.assertGreater(len(plan.openclaw_install_plan.agents), 1)
         self.assertFalse(plan.openclaw_settings_bundle.supports_direct_import)
         self.assertTrue(plan.openclaw_settings_bundle.bindings_template)
+        self.assertEqual(plan.openclaw_settings_bundle.settings_patch["agents"]["defaults"]["sandbox"]["mode"], "non-main")
+        self.assertEqual(plan.openclaw_settings_bundle.settings_patch["agents"]["defaults"]["sandbox"]["scope"], "agent")
         for agent in plan.openclaw_settings_bundle.settings_patch["agents"]["list"]:
-            self.assertIn("dialogue_contract", agent["metadata"])
+            self.assertNotIn("metadata", agent)
+            self.assertIn(agent["sandbox"]["mode"], {"off", "all"})
             self.assertIn("对话口吻要求", agent["identity"]["theme"])
             self.assertIn("优先词汇", agent["identity"]["theme"])
         self.assertEqual(plan.openclaw_settings_bundle.dialogue_contracts["exmachina-primary"]["role_name"], "主连结体")

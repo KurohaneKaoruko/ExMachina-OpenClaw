@@ -10,6 +10,9 @@ from .workspace import scan_workspace
 
 
 STATUS_ORDER = {"pass": 0, "warn": 1, "fail": 2}
+ALLOWED_AGENT_KEYS = {"id", "name", "default", "workspace", "model", "identity", "sandbox"}
+ALLOWED_SANDBOX_MODES = {"off", "non-main", "all"}
+ALLOWED_SANDBOX_SCOPES = {"session", "agent", "shared"}
 
 
 @dataclass
@@ -201,6 +204,15 @@ def _build_pack_check(pack_root: Path) -> DoctorCheck:
         )
 
     mode = next(iter(modes))
+    settings_errors = _validate_settings_patch(settings_bundle)
+    if settings_errors:
+        return DoctorCheck(
+            name="Generated Pack",
+            status="fail",
+            summary="导出包中的 OpenClaw 设置补丁包含当前 schema 不接受的字段。",
+            details=settings_errors,
+        )
+
     compat_plan = pack_root / "install" / "compat" / "openclaw.agents.plan.json"
     if mode == "full" and not compat_plan.exists():
         return DoctorCheck(
@@ -247,6 +259,44 @@ def _extract_body_name(payload: Any) -> str:
     if payload is None:
         return ""
     return str(payload).strip()
+
+
+def _validate_settings_patch(settings_bundle: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    settings_patch = settings_bundle.get("settings_patch", {})
+    agents = settings_patch.get("agents", {})
+
+    defaults = agents.get("defaults", {})
+    errors.extend(_validate_sandbox(defaults.get("sandbox"), "agents.defaults.sandbox"))
+
+    for index, agent in enumerate(agents.get("list", [])):
+        if not isinstance(agent, dict):
+            errors.append(f"agents.list[{index}] 不是对象。")
+            continue
+
+        unknown_keys = sorted(set(agent.keys()) - ALLOWED_AGENT_KEYS)
+        if unknown_keys:
+            errors.append(f"agents.list[{index}] 包含未知字段：{', '.join(unknown_keys)}")
+
+        errors.extend(_validate_sandbox(agent.get("sandbox"), f"agents.list[{index}].sandbox"))
+
+    return errors
+
+
+def _validate_sandbox(payload: Any, label: str) -> list[str]:
+    if payload is None:
+        return []
+    if not isinstance(payload, dict):
+        return [f"{label} 不是对象。"]
+
+    errors: list[str] = []
+    mode = payload.get("mode")
+    scope = payload.get("scope")
+    if mode is not None and mode not in ALLOWED_SANDBOX_MODES:
+        errors.append(f"{label}.mode = {mode!r} 不在允许值 {sorted(ALLOWED_SANDBOX_MODES)} 内。")
+    if scope is not None and scope not in ALLOWED_SANDBOX_SCOPES:
+        errors.append(f"{label}.scope = {scope!r} 不在允许值 {sorted(ALLOWED_SANDBOX_SCOPES)} 内。")
+    return errors
 
 
 def _merge_status(statuses: Any) -> str:

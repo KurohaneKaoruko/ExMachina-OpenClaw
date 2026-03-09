@@ -43,7 +43,7 @@
 最简单的使用方式有两种：
 
 1. **把仓库克隆到本地，然后让 OpenClaw 打开这个仓库**  
-   OpenClaw 会先看到根目录的 `AGENTS.md`、`SOUL.md`、`TOOLS.md`、`BOOTSTRAP.md`，再进入安装流程。
+   OpenClaw 会先看到根目录的 `AGENTS.md` 与 `BOOTSTRAP.md`，再进入安装流程。
 
 2. **把仓库链接直接交给 OpenClaw**  
    只要它能把仓库作为 workspace 打开，就可以先按照根目录 `BOOTSTRAP.md` 的步骤自举，再读取 `openclaw-pack/install/` 下的安装计划。

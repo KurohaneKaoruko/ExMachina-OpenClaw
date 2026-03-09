@@ -79,6 +79,8 @@ class CliTests(unittest.TestCase):
             self.assertIn("openclaw_settings_bundle", manifest)
             self.assertIn("openclaw_directive", manifest)
             self.assertTrue(manifest["openclaw_directive"]["quick_start"])
+            self.assertNotIn("metadata", settings_bundle["settings_patch"]["agents"]["list"][0])
+            self.assertEqual(settings_bundle["settings_patch"]["agents"]["list"][0]["sandbox"]["mode"], "off")
             self.assertEqual(runtime_spec["runtime_role"], "single-agent-conductor")
             self.assertIn("ordered_execution_steps", task_board)
             self.assertTrue(task_board["ordered_execution_steps"])
@@ -131,6 +133,7 @@ class CliTests(unittest.TestCase):
             install_plan = json.loads(
                 (output / "openclaw-pack" / "install" / "compat" / "openclaw.agents.plan.json").read_text(encoding="utf-8")
             )
+            settings_bundle = json.loads((output / "openclaw-pack" / "openclaw.settings.json").read_text(encoding="utf-8"))
             topology = json.loads((output / "openclaw-pack" / "runtime" / "topology.json").read_text(encoding="utf-8"))
             workspace_bootstrap = (
                 output / "openclaw-pack" / "install" / "compat" / "workspaces" / "exmachina-main" / "BOOTSTRAP.md"
@@ -150,6 +153,11 @@ class CliTests(unittest.TestCase):
             self.assertIn("优先词汇", workspace_bootstrap)
             self.assertIn("## Full 最短路径", quickstart_doc)
             self.assertIn("openclaw.agents.plan.json", quickstart_doc)
+            self.assertEqual(settings_bundle["settings_patch"]["agents"]["defaults"]["sandbox"]["mode"], "non-main")
+            self.assertEqual(settings_bundle["settings_patch"]["agents"]["defaults"]["sandbox"]["scope"], "agent")
+            for agent in settings_bundle["settings_patch"]["agents"]["list"]:
+                self.assertNotIn("metadata", agent)
+                self.assertIn(agent["sandbox"]["mode"], {"off", "all"})
 
     def test_doctor_command_outputs_json_report(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

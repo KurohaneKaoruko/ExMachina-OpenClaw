@@ -3,7 +3,7 @@
   "carry_forward": [
     "记录主连结体 知识连结体 的交付物、适用边界与成员分工。",
     "归档证据摘要、风险清单与置信度结论，避免后续重复判断。",
-    "保留关键路径索引：README.md、pyproject.toml、tests。",
+    "保留关键路径索引：README.md、openclaw-pack/README.md、openclaw-pack/runtime/README.md、pyproject.toml、tests。",
     "沉淀面向使用者的说明、示例与迁移差异。",
     "沉淀安全假设、威胁面、加固建议与待复核项。",
     "沉淀术语表、决策索引、问题索引与复用入口。"
@@ -11,7 +11,7 @@
   "decisions": [
     "主连结体选型：知识连结体（13 分）。",
     "协作链路：理性连结体、校验连结体、文档连结体、安全连结体。",
-    "工作区语言栈：Markdown、TOML。",
+    "工作区语言栈：JSON、Markdown、Python、TOML。",
     "保留关键结论的证据等级、放弃方案与裁决理由。"
   ],
   "open_questions": [

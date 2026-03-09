@@ -859,7 +859,15 @@ def render_settings_installer_script(plan: MissionPlan) -> str:
 
 import argparse
 import json
+import os
+import shutil
+import subprocess
 from pathlib import Path
+
+
+ALLOWED_AGENT_KEYS = {"id", "name", "default", "workspace", "model", "identity", "sandbox"}
+ALLOWED_SANDBOX_MODES = {"off", "non-main", "all"}
+ALLOWED_SANDBOX_SCOPES = {"session", "agent", "shared"}
 
 
 def merge_named_list(current: list, incoming: list, key: str) -> list:
@@ -899,6 +907,50 @@ def deep_merge(base: dict, patch: dict) -> dict:
     return merged
 
 
+def validate_patch(patch: dict) -> list[str]:
+    errors = []
+    agents = patch.get("agents", {})
+    defaults = agents.get("defaults", {})
+    errors.extend(validate_sandbox(defaults.get("sandbox"), "agents.defaults.sandbox"))
+
+    for index, agent in enumerate(agents.get("list", [])):
+        if not isinstance(agent, dict):
+            errors.append(f"agents.list[{index}] 不是对象。")
+            continue
+
+        unknown_keys = sorted(set(agent.keys()) - ALLOWED_AGENT_KEYS)
+        if unknown_keys:
+            errors.append(f"agents.list[{index}] 包含未知字段：{', '.join(unknown_keys)}")
+        errors.extend(validate_sandbox(agent.get("sandbox"), f"agents.list[{index}].sandbox"))
+
+    return errors
+
+
+def validate_sandbox(payload: object, label: str) -> list[str]:
+    if payload is None:
+        return []
+    if not isinstance(payload, dict):
+        return [f"{label} 不是对象。"]
+
+    errors = []
+    mode = payload.get("mode")
+    scope = payload.get("scope")
+    if mode is not None and mode not in ALLOWED_SANDBOX_MODES:
+        errors.append(f"{label}.mode = {mode!r} 不在允许值 {sorted(ALLOWED_SANDBOX_MODES)} 内。")
+    if scope is not None and scope not in ALLOWED_SANDBOX_SCOPES:
+        errors.append(f"{label}.scope = {scope!r} 不在允许值 {sorted(ALLOWED_SANDBOX_SCOPES)} 内。")
+    return errors
+
+
+def validate_with_openclaw(config_path: Path) -> None:
+    if shutil.which("openclaw") is None:
+        return
+
+    env = dict(os.environ)
+    env["OPENCLAW_CONFIG_PATH"] = str(config_path)
+    subprocess.run(["openclaw", "config", "validate"], check=True, env=env)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Merge ExMachina OpenClaw settings template into an existing OpenClaw config.")
     parser.add_argument("--config", required=True, help="Target OpenClaw config path, e.g. ~/.openclaw/openclaw.json")
@@ -910,15 +962,31 @@ def main() -> int:
 
     settings_bundle = json.loads(settings_path.read_text(encoding="utf-8"))
     patch = settings_bundle.get("settings_patch", {})
+    validation_errors = validate_patch(patch)
+    if validation_errors:
+        for item in validation_errors:
+            print(item)
+        return 1
 
+    backup_path = config_path.with_suffix(config_path.suffix + ".exmachina.bak")
     if config_path.exists():
         current = json.loads(config_path.read_text(encoding="utf-8"))
+        shutil.copy2(config_path, backup_path)
     else:
         current = {}
 
     merged = deep_merge(current, patch)
     config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    try:
+        config_path.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+        validate_with_openclaw(config_path)
+    except Exception:
+        if backup_path.exists():
+            shutil.copy2(backup_path, config_path)
+        raise
+
+    if backup_path.exists():
+        print(f"已创建备份：{backup_path}")
     print(f"已合并 ExMachina 设置到：{config_path}")
     return 0
 
