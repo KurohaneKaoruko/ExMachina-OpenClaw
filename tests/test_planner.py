@@ -33,9 +33,14 @@ class PlannerTests(unittest.TestCase):
         self.assertIn("OPENCLAW_INSTALL_LANGUAGE", plan.openclaw_settings_bundle.template_variables)
         self.assertIn("install_mode", plan.openclaw_settings_bundle.install_intake["answers_template"])
         required_keys = {item["key"] for item in plan.openclaw_settings_bundle.install_intake["required_questions"]}
-        self.assertTrue({"install_language", "conductor_name", "install_mode"}.issubset(required_keys))
+        self.assertTrue(
+            {"install_language", "conductor_name", "install_mode", "target_config_path", "workspace_root"}.issubset(
+                required_keys
+            )
+        )
         main_agent = plan.openclaw_settings_bundle.settings_patch["agents"]["list"][0]
         self.assertNotIn("metadata", main_agent)
+        self.assertNotIn("model", main_agent)
         self.assertEqual(main_agent["sandbox"]["mode"], "off")
         self.assertEqual(main_agent["name"], "{{OPENCLAW_CONDUCTOR_NAME}}")
         self.assertIn("{{OPENCLAW_INSTALL_LANGUAGE}}", main_agent["identity"]["theme"])
@@ -82,11 +87,12 @@ class PlannerTests(unittest.TestCase):
         self.assertGreater(len(plan.openclaw_install_plan.agents), 1)
         self.assertFalse(plan.openclaw_settings_bundle.supports_direct_import)
         self.assertTrue(plan.openclaw_settings_bundle.bindings_template)
-        self.assertEqual(plan.openclaw_settings_bundle.settings_patch["agents"]["defaults"]["sandbox"]["mode"], "non-main")
-        self.assertEqual(plan.openclaw_settings_bundle.settings_patch["agents"]["defaults"]["sandbox"]["scope"], "agent")
+        self.assertNotIn("defaults", plan.openclaw_settings_bundle.settings_patch["agents"])
         for agent in plan.openclaw_settings_bundle.settings_patch["agents"]["list"]:
             self.assertNotIn("metadata", agent)
+            self.assertNotIn("model", agent)
             self.assertIn(agent["sandbox"]["mode"], {"off", "all"})
+            self.assertEqual(agent["workspace"], "{{EXMACHINA_PACK_ROOT}}")
             self.assertIn("对话口吻要求", agent["identity"]["theme"])
             self.assertIn("优先词汇", agent["identity"]["theme"])
             self.assertIn("{{OPENCLAW_INSTALL_LANGUAGE}}", agent["identity"]["theme"])

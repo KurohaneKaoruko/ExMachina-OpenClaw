@@ -9,7 +9,9 @@ import subprocess
 from pathlib import Path
 
 
-ALLOWED_AGENT_KEYS = {"id", "name", "default", "workspace", "model", "identity", "sandbox"}
+ALLOWED_PATCH_KEYS = {"agents"}
+ALLOWED_AGENT_SECTION_KEYS = {"list"}
+ALLOWED_AGENT_KEYS = {"id", "name", "default", "workspace", "identity", "sandbox"}
 ALLOWED_SANDBOX_MODES = {"off", "non-main", "all"}
 ALLOWED_SANDBOX_SCOPES = {"session", "agent", "shared"}
 ANSWER_KEY_TO_VAR = {
@@ -17,9 +19,6 @@ ANSWER_KEY_TO_VAR = {
     "conductor_name": "OPENCLAW_CONDUCTOR_NAME",
     "install_mode": "OPENCLAW_INSTALL_MODE",
     "workspace_root": "EXMACHINA_PACK_ROOT",
-    "primary_model": "OPENCLAW_PRIMARY_MODEL",
-    "fast_model": "OPENCLAW_FAST_MODEL",
-    "support_model": "OPENCLAW_SUPPORT_MODEL",
 }
 PLACEHOLDER_PATTERN = re.compile(r"{{([A-Z0-9_]+)}}")
 
@@ -63,9 +62,14 @@ def deep_merge(base: dict, patch: dict) -> dict:
 
 def validate_patch(patch: dict) -> list[str]:
     errors = []
+    unknown_patch_keys = sorted(set(patch.keys()) - ALLOWED_PATCH_KEYS)
+    if unknown_patch_keys:
+        errors.append(f"settings_patch 包含未允许的顶层字段：{', '.join(unknown_patch_keys)}")
+
     agents = patch.get("agents", {})
-    defaults = agents.get("defaults", {})
-    errors.extend(validate_sandbox(defaults.get("sandbox"), "agents.defaults.sandbox"))
+    unknown_agent_section_keys = sorted(set(agents.keys()) - ALLOWED_AGENT_SECTION_KEYS)
+    if unknown_agent_section_keys:
+        errors.append(f"settings_patch.agents 包含未允许的字段：{', '.join(unknown_agent_section_keys)}")
 
     for index, agent in enumerate(agents.get("list", [])):
         if not isinstance(agent, dict):
@@ -129,9 +133,6 @@ def build_replacements(settings_bundle: dict, args: argparse.Namespace) -> dict[
         "OPENCLAW_CONDUCTOR_NAME": args.conductor_name,
         "OPENCLAW_INSTALL_MODE": args.install_mode,
         "EXMACHINA_PACK_ROOT": args.workspace_value,
-        "OPENCLAW_PRIMARY_MODEL": args.primary_model,
-        "OPENCLAW_FAST_MODEL": args.fast_model,
-        "OPENCLAW_SUPPORT_MODEL": args.support_model,
     }
     for key, value in cli_overrides.items():
         if value is not None:
@@ -187,9 +188,6 @@ def main() -> int:
     parser.add_argument("--conductor-name", help="Display name for the top conductor / main agent")
     parser.add_argument("--mode", dest="install_mode", choices=("lite", "full"), help="Selected install mode from intake")
     parser.add_argument("--workspace-value", help="Workspace path that should replace {{EXMACHINA_PACK_ROOT}}")
-    parser.add_argument("--primary-model", help="Model for the main entry agent")
-    parser.add_argument("--fast-model", help="Fast model for full-mode conductor")
-    parser.add_argument("--support-model", help="Model for full-mode support agents")
     args = parser.parse_args()
 
     config_path = Path(args.config).expanduser().resolve()

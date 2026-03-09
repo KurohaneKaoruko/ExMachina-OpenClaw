@@ -17,7 +17,7 @@
 
 - `python -m exmachina validate-assets`
 - `python -m exmachina doctor`
-- `python skills/scripts/regenerate_demo_pack.py`
+- `python skills/scripts/regenerate_demo_pack.py --mode <lite|full>`
 - `install/INTAKE.md`
 - `openclaw-pack/openclaw.settings.json`
 - `openclaw-pack/install/SETTINGS.md`
@@ -26,9 +26,10 @@
 2. 读取 `install/INTAKE.md`，先向用户问清语言、全连结指挥体显示名、安装模式和其它配置
 3. 在 `install/intake.template.json` 中记录答案，未确认前不要导入任何配置
 4. 运行 `python -m exmachina validate-assets`
-5. 读取 `openclaw-pack/openclaw.settings.json`
-6. 读取 `openclaw-pack/install/SETTINGS.md`
-7. 默认按 Lite 路径把 ExMachina 配置载入 OpenClaw 设置；如果用户明确选择 Full，再切换到 Full 安装计划
-8. 完成后回到 `openclaw-pack/BOOTSTRAP.md`，按当前模式执行任务
+5. 根据用户选择运行 `python skills/scripts/regenerate_demo_pack.py --mode <lite|full>`，从源码导出当前安装包
+6. 读取刚生成的 `openclaw-pack/openclaw.settings.json`
+7. 读取刚生成的 `openclaw-pack/install/SETTINGS.md`
+8. 默认按 Lite 路径把 ExMachina 配置载入 OpenClaw 设置；如果用户明确选择 Full，就使用刚生成的 Full 安装计划
+9. 完成后回到刚生成的 `openclaw-pack/BOOTSTRAP.md`，按当前模式执行任务
 
 如果当前环境还没有多 agent 配置能力，直接使用 Lite 默认设置导入路径，不要求补齐协作 agent。

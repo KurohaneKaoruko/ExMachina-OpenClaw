@@ -31,7 +31,7 @@ class DoctorTests(unittest.TestCase):
             self.assertEqual(report.checks[2].status, "pass")
             self.assertTrue(any("build --task" in item for item in report.recommended_commands))
 
-    def test_run_doctor_fails_for_invalid_settings_patch_schema(self) -> None:
+    def test_run_doctor_fails_for_model_override_in_settings_patch(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             workspace = Path(tmpdir) / "workspace"
             pack = Path(tmpdir) / "openclaw-pack"
@@ -43,7 +43,7 @@ class DoctorTests(unittest.TestCase):
 
             settings_path = pack / "openclaw.settings.json"
             settings_bundle = json.loads(settings_path.read_text(encoding="utf-8"))
-            settings_bundle["settings_patch"]["agents"]["list"][0]["metadata"] = {"bad": True}
+            settings_bundle["settings_patch"]["agents"]["list"][0]["model"] = {"primary": "bad-model"}
             settings_path.write_text(json.dumps(settings_bundle, ensure_ascii=False, indent=2), encoding="utf-8")
 
             report = run_doctor(workspace_path=str(workspace), pack_path=str(pack))

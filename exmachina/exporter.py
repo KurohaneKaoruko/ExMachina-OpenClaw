@@ -65,6 +65,7 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         target / "install",
         target / "link-bodies",
         target / "link-body-conductors",
+        target / "modes",
         target / "subagents",
         target / "protocols",
         target / "runtime",
@@ -654,7 +655,7 @@ def render_bootstrap_with_install_intake(plan: MissionPlan) -> str:
             "- 外部路由：不需要",
             "",
             "## 安装前必须先问清",
-            "- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和模型。",
+            "- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和其它配置。",
             "- 在 `install/intake.template.json` 中记录答案，未确认前不要导入任何 settings patch。",
             "- 如果用户选择 full，而当前导出包是 lite，先回到源码重生成 full 包。",
             "",
@@ -695,12 +696,12 @@ def render_bootstrap_with_install_intake(plan: MissionPlan) -> str:
         "- 先输出证据，再输出结论。",
         "",
         "## 安装前必须先问清",
-        "- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和模型。",
+        "- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和其它配置。",
         "- 在 `install/intake.template.json` 中记录答案，未确认前不要导入任何 settings patch。",
         "- 如果宿主能力与用户所选模式不匹配，先收束模式再继续。",
         "",
         "## 加载顺序",
-        "1. 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和模型。",
+        "1. 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和其它配置。",
         "2. 在 `install/intake.template.json` 中记录答案，并确认安装模式与宿主能力匹配。",
         "3. 读取 `manifest.json`，理解项目名、本体结构、协议索引与编排依据。",
         "4. 读取 `protocols/00_绝对理性协议.md`。",
@@ -904,7 +905,7 @@ def render_settings_install_readme(plan: MissionPlan) -> str:
         f"是否支持直接导入：{'是' if plan.openclaw_settings_bundle.supports_direct_import else '否'}",
         "",
         "## 安装前先问清",
-        "- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和模型。",
+        "- 先读取 `install/INTAKE.md`，逐项询问语言、全连结指挥体显示名、安装模式、配置路径和其它配置。",
         "- 把答案记录到 `install/intake.template.json`，或在安装脚本中通过 `--answers` / 显式参数传入。",
         "- 在安装模式与当前导出包不一致时，不要继续写入配置，先重生成对应模式的 pack。",
         "",
@@ -1066,7 +1067,9 @@ import subprocess
 from pathlib import Path
 
 
-ALLOWED_AGENT_KEYS = {"id", "name", "default", "workspace", "model", "identity", "sandbox"}
+ALLOWED_PATCH_KEYS = {"agents"}
+ALLOWED_AGENT_SECTION_KEYS = {"list"}
+ALLOWED_AGENT_KEYS = {"id", "name", "default", "workspace", "identity", "sandbox"}
 ALLOWED_SANDBOX_MODES = {"off", "non-main", "all"}
 ALLOWED_SANDBOX_SCOPES = {"session", "agent", "shared"}
 ANSWER_KEY_TO_VAR = {
@@ -1074,9 +1077,6 @@ ANSWER_KEY_TO_VAR = {
     "conductor_name": "OPENCLAW_CONDUCTOR_NAME",
     "install_mode": "OPENCLAW_INSTALL_MODE",
     "workspace_root": "EXMACHINA_PACK_ROOT",
-    "primary_model": "OPENCLAW_PRIMARY_MODEL",
-    "fast_model": "OPENCLAW_FAST_MODEL",
-    "support_model": "OPENCLAW_SUPPORT_MODEL",
 }
 PLACEHOLDER_PATTERN = re.compile(r"{{([A-Z0-9_]+)}}")
 
@@ -1120,9 +1120,14 @@ def deep_merge(base: dict, patch: dict) -> dict:
 
 def validate_patch(patch: dict) -> list[str]:
     errors = []
+    unknown_patch_keys = sorted(set(patch.keys()) - ALLOWED_PATCH_KEYS)
+    if unknown_patch_keys:
+        errors.append(f"settings_patch 包含未允许的顶层字段：{', '.join(unknown_patch_keys)}")
+
     agents = patch.get("agents", {})
-    defaults = agents.get("defaults", {})
-    errors.extend(validate_sandbox(defaults.get("sandbox"), "agents.defaults.sandbox"))
+    unknown_agent_section_keys = sorted(set(agents.keys()) - ALLOWED_AGENT_SECTION_KEYS)
+    if unknown_agent_section_keys:
+        errors.append(f"settings_patch.agents 包含未允许的字段：{', '.join(unknown_agent_section_keys)}")
 
     for index, agent in enumerate(agents.get("list", [])):
         if not isinstance(agent, dict):
@@ -1186,9 +1191,6 @@ def build_replacements(settings_bundle: dict, args: argparse.Namespace) -> dict[
         "OPENCLAW_CONDUCTOR_NAME": args.conductor_name,
         "OPENCLAW_INSTALL_MODE": args.install_mode,
         "EXMACHINA_PACK_ROOT": args.workspace_value,
-        "OPENCLAW_PRIMARY_MODEL": args.primary_model,
-        "OPENCLAW_FAST_MODEL": args.fast_model,
-        "OPENCLAW_SUPPORT_MODEL": args.support_model,
     }
     for key, value in cli_overrides.items():
         if value is not None:
@@ -1244,9 +1246,6 @@ def main() -> int:
     parser.add_argument("--conductor-name", help="Display name for the top conductor / main agent")
     parser.add_argument("--mode", dest="install_mode", choices=("lite", "full"), help="Selected install mode from intake")
     parser.add_argument("--workspace-value", help="Workspace path that should replace {{EXMACHINA_PACK_ROOT}}")
-    parser.add_argument("--primary-model", help="Model for the main entry agent")
-    parser.add_argument("--fast-model", help="Fast model for full-mode conductor")
-    parser.add_argument("--support-model", help="Model for full-mode support agents")
     args = parser.parse_args()
 
     config_path = Path(args.config).expanduser().resolve()

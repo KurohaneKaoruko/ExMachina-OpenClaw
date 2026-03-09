@@ -10,7 +10,9 @@ from .workspace import scan_workspace
 
 
 STATUS_ORDER = {"pass": 0, "warn": 1, "fail": 2}
-ALLOWED_AGENT_KEYS = {"id", "name", "default", "workspace", "model", "identity", "sandbox"}
+ALLOWED_PATCH_KEYS = {"agents"}
+ALLOWED_AGENT_SECTION_KEYS = {"list"}
+ALLOWED_AGENT_KEYS = {"id", "name", "default", "workspace", "identity", "sandbox"}
 ALLOWED_SANDBOX_MODES = {"off", "non-main", "all"}
 ALLOWED_SANDBOX_SCOPES = {"session", "agent", "shared"}
 
@@ -267,10 +269,14 @@ def _extract_body_name(payload: Any) -> str:
 def _validate_settings_patch(settings_bundle: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     settings_patch = settings_bundle.get("settings_patch", {})
-    agents = settings_patch.get("agents", {})
+    unknown_patch_keys = sorted(set(settings_patch.keys()) - ALLOWED_PATCH_KEYS)
+    if unknown_patch_keys:
+        errors.append(f"settings_patch 包含未允许的顶层字段：{', '.join(unknown_patch_keys)}")
 
-    defaults = agents.get("defaults", {})
-    errors.extend(_validate_sandbox(defaults.get("sandbox"), "agents.defaults.sandbox"))
+    agents = settings_patch.get("agents", {})
+    unknown_agent_section_keys = sorted(set(agents.keys()) - ALLOWED_AGENT_SECTION_KEYS)
+    if unknown_agent_section_keys:
+        errors.append(f"settings_patch.agents 包含未允许的字段：{', '.join(unknown_agent_section_keys)}")
 
     for index, agent in enumerate(agents.get("list", [])):
         if not isinstance(agent, dict):
@@ -296,7 +302,7 @@ def _validate_install_intake_bundle(settings_bundle: dict[str, Any]) -> list[str
     if not template_variables:
         errors.append("openclaw.settings.json 缺少 template_variables。")
 
-    required_keys = {"install_language", "conductor_name", "install_mode"}
+    required_keys = {"install_language", "conductor_name", "install_mode", "target_config_path", "workspace_root"}
     declared_keys = {item.get("key") for item in intake.get("required_questions", []) if isinstance(item, dict)}
     missing_keys = sorted(required_keys - declared_keys)
     if missing_keys:
@@ -340,7 +346,7 @@ def _build_recommended_commands(checks: list[DoctorCheck], workspace_root: Path,
     workspace_check = next(item for item in checks if item.name == "Workspace Context")
 
     if pack_check.status != "pass":
-        commands.append("python skills/scripts/regenerate_demo_pack.py")
+        commands.append("python skills/scripts/regenerate_demo_pack.py --mode lite")
     if workspace_check.status != "fail":
         commands.append(
             f'python -m exmachina build --task "<你的任务>" --workspace "{workspace_root}" --out "dist/exmachina"'

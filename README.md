@@ -55,33 +55,36 @@
 
 如果你的 OpenClaw 只支持“打开一个仓库 → 读取几个文件 → 在单会话里继续执行”，那就直接使用默认 `lite` 即可。
 
-在这种场景下，最关键的几个文件是：
+在这种场景下，最关键的几个入口是：
 
 - `install/INTAKE.md`：给 OpenClaw 的安装前问询清单；
-- `openclaw-pack/openclaw.settings.json`：给 OpenClaw 的设置导入模板；
-- `openclaw-pack/runtime/task-board.json`：给 OpenClaw 的最小执行任务板与顺序步骤。
+- `python skills/scripts/regenerate_demo_pack.py --mode <lite|full>`：让 OpenClaw 自己从源码导出当前安装包；
+- `openclaw-pack/openclaw.settings.json`：导出完成后给 OpenClaw 的设置导入模板；
+- `openclaw-pack/runtime/task-board.json`：导出完成后的最小执行任务板与顺序步骤。
 
 推荐安装步骤：
 
 ```bash
 python -m exmachina validate-assets
 python -m exmachina doctor
-python skills/scripts/regenerate_demo_pack.py
+python skills/scripts/regenerate_demo_pack.py --mode lite
 ```
 
 真正给 OpenClaw 用的安装入口在：
 
 - 根目录 `BOOTSTRAP.md`
 - `install/INTAKE.md`
-- `openclaw-pack/openclaw.settings.json`
-- `openclaw-pack/install/SETTINGS.md`
-- `openclaw-pack/install/compat/INSTALL.md`
-- `openclaw-pack/install/compat/openclaw.agents.plan.json`
-- `openclaw-pack/install/compat/`（仅兼容旧 workspace 流程时使用）
+- `skills/scripts/regenerate_demo_pack.py`
+- `openclaw-pack/openclaw.settings.json`（由源码导出后读取）
+- `openclaw-pack/install/SETTINGS.md`（由源码导出后读取）
+- `openclaw-pack/install/compat/INSTALL.md`（Full 模式导出后读取）
+- `openclaw-pack/install/compat/openclaw.agents.plan.json`（Full 模式导出后读取）
+- `openclaw-pack/install/compat/`（仅 Full 模式导出后使用）
 
 这三者组合起来的目标是：
 
 - 先把 ExMachina 多智能体配置载入 OpenClaw 设置；
+- 先让 OpenClaw 自己根据问询结果运行源码导出；
 - 默认先给出一个 Lite 单 agent 可装载路径；
 - 在需要时再给出主控 agent、主连结体 agent 和协作 agent 的完整安装计划；
 - 只有在必须兼容旧 workspace 安装流时，才使用 `install/compat/`；

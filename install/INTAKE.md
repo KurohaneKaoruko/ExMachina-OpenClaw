@@ -12,18 +12,16 @@
 4. OpenClaw 配置文件路径：本次要写入哪份 OpenClaw 配置？
    默认值：`~/.openclaw/openclaw.json`
 5. workspace 路径：把 workspace 指向哪个仓库或导出包路径？
-6. 主模型：主控体 / Lite 主入口使用哪个模型？
 
 ## 可选补充项
-1. Fast 模型：如果走 Full 模式，主控体快速模型是什么？
-2. Support 模型：如果走 Full 模式，协作 agent 使用哪个模型？
-3. 宿主多 agent 能力：宿主是否支持多 agent 绑定与外部路由？
-4. 其它配置：是否还需要记录渠道绑定、token、workspace 或风格配置？
+1. 宿主多 agent 能力：宿主是否支持多 agent 绑定与外部路由？
+2. 其它配置：是否还需要记录渠道绑定、token、workspace 或风格配置？
 
 ## 阻断规则
-- 在语言、全连结指挥体显示名、安装模式、配置路径和模型未确认前，不得导入任何 settings patch。
+- 在语言、全连结指挥体显示名、安装模式、配置路径和 workspace 路径未确认前，不得导入任何 settings patch。
 - 如果用户选择 `full`，但宿主不支持多 agent 绑定与路由，则必须退回 `lite`。
 - 如果用户选择的模式与当前导出包不一致，先重生成对应模式的 pack，再继续安装。
+- ExMachina 创建的 agent 必须继承 OpenClaw 当前默认模型，不得覆写默认模型、provider、API 或其它无关配置。
 
 ## 记录方式
 - 把答案写入同目录 `intake.template.json`。

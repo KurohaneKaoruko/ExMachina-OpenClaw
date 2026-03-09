@@ -4,9 +4,6 @@
   "install_mode": "lite",
   "target_config_path": "~/.openclaw/openclaw.json",
   "workspace_root": ".",
-  "primary_model": "",
-  "fast_model": "",
-  "support_model": "",
   "host_supports_multi_agent": false,
   "extra_config_notes": ""
 }

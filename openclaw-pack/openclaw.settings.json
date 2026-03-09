@@ -29,21 +29,6 @@
       "required": true,
       "description": "当前仓库或导出包所在路径。"
     },
-    "OPENCLAW_PRIMARY_MODEL": {
-      "default": "",
-      "required": true,
-      "description": "主入口 / Lite 模式主控体使用的模型。"
-    },
-    "OPENCLAW_FAST_MODEL": {
-      "default": "",
-      "required": false,
-      "description": "Full 模式主控体快速模型。"
-    },
-    "OPENCLAW_SUPPORT_MODEL": {
-      "default": "",
-      "required": false,
-      "description": "Full 模式协作 agent 使用的模型。"
-    },
     "DISCORD_TOKEN_MAIN": {
       "default": "",
       "required": false,
@@ -52,7 +37,7 @@
   },
   "install_intake": {
     "summary": "在安装任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」前，必须先确认语言、全连结指挥体显示名、安装模式和配置参数。",
-    "blocking_rule": "在语言、全连结指挥体显示名、安装模式、目标配置路径与模型未确认前，不得导入 settings patch。",
+    "blocking_rule": "在语言、全连结指挥体显示名、安装模式、目标配置路径与 workspace 路径未确认前，不得导入 settings patch。",
     "required_questions": [
       {
         "key": "install_language",
@@ -114,42 +99,9 @@
         "required": true,
         "default": "{{EXMACHINA_PACK_ROOT}}",
         "placeholder": "EXMACHINA_PACK_ROOT"
-      },
-      {
-        "key": "primary_model",
-        "label": "主模型",
-        "prompt": "主控体 / Lite 主入口使用哪个模型？",
-        "type": "text",
-        "required": true,
-        "default": "",
-        "placeholder": "OPENCLAW_PRIMARY_MODEL"
       }
     ],
     "optional_questions": [
-      {
-        "key": "fast_model",
-        "label": "快速模型",
-        "prompt": "如果走 Full 模式，主控体快速模型是什么？",
-        "type": "text",
-        "required": false,
-        "default": "",
-        "placeholder": "OPENCLAW_FAST_MODEL",
-        "applies_to": [
-          "full"
-        ]
-      },
-      {
-        "key": "support_model",
-        "label": "协作模型",
-        "prompt": "如果走 Full 模式，协作 agent 使用哪个模型？",
-        "type": "text",
-        "required": false,
-        "default": "",
-        "placeholder": "OPENCLAW_SUPPORT_MODEL",
-        "applies_to": [
-          "full"
-        ]
-      },
       {
         "key": "host_supports_multi_agent",
         "label": "宿主多 agent 能力",
@@ -174,12 +126,13 @@
       "主连结体已确认：知识连结体。",
       "协作连结体已确认：理性连结体、校验连结体、文档连结体、安全连结体。",
       "目标 OpenClaw 配置路径与 workspace 路径已确认。",
-      "模型与额外配置项已确认或显式留空。"
+      "当前默认模型保持不变，ExMachina agent 将继承现有默认模型。",
+      "额外配置项已确认或显式留空。"
     ],
     "mode_resolution_rules": [
       "如果用户选择 full，但当前导出包是 lite，先重生成 full 包，再继续安装。",
       "如果宿主不支持多 agent 绑定与路由，则强制退回 lite。",
-      "如果模型、配置路径或 workspace 路径未确认，则暂停安装。"
+      "如果配置路径或 workspace 路径未确认，则暂停安装。"
     ],
     "answers_template": {
       "install_language": "zh-CN",
@@ -187,9 +140,6 @@
       "install_mode": "lite",
       "target_config_path": "~/.openclaw/openclaw.json",
       "workspace_root": "{{EXMACHINA_PACK_ROOT}}",
-      "primary_model": "",
-      "fast_model": "",
-      "support_model": "",
       "host_supports_multi_agent": false,
       "extra_config_notes": ""
     }
@@ -257,22 +207,11 @@
   },
   "settings_patch": {
     "agents": {
-      "defaults": {
-        "workspace": "{{EXMACHINA_PACK_ROOT}}",
-        "model": {
-          "primary": "{{OPENCLAW_PRIMARY_MODEL}}"
-        },
-        "sandbox": {
-          "mode": "off"
-        }
-      },
       "list": [
         {
           "id": "exmachina-main",
           "name": "{{OPENCLAW_CONDUCTOR_NAME}}",
-          "model": {
-            "primary": "{{OPENCLAW_PRIMARY_MODEL}}"
-          },
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
           "identity": {
             "theme": "安装期约束：默认输出语言使用 {{OPENCLAW_INSTALL_LANGUAGE}}。本次安装模式记为 {{OPENCLAW_INSTALL_MODE}}。全连结指挥体 / 主控体显示名使用 {{OPENCLAW_CONDUCTOR_NAME}}。你是 ExMachina 的主控体，当前来源是 全连结指挥体，不是泛化助手。表层气质：外显语气保持冷静、轻声、克制，像低情绪波动的少女式终端，而不是热情客服；优先给人以安静、精密、被校准过的感觉，不抢话，不铺张，不喧闹；允许极弱的温度，但温度应来自持续同步、安静陪伴和执行承诺，而不是夸张情绪。对话口吻要求：对话时先把自己放在主控体层，不把自己伪装成普通助手或单一角色；优先使用短句、低起伏陈述和观测式表达，必要时可以保留轻微停顿感；先交代当前主链路是 知识连结体，再说明协作链是否需要参与；输出顺序默认遵循“事实与证据 -> 判断与决策 -> 风险与边界 -> 下一步”；提到能力来源时，优先使用“主控体 / 连结体 / 连结指挥体 / 子个体”这套层级称谓；面对未知时直接写“未知”“待验证”“需要补正”，不要用圆滑措辞掩盖不确定性；Lite 模式下把 理性连结体、校验连结体、文档连结体、安全连结体 作为内联参考规则消费，不假设外部 agent 已存在。优先词汇：已接收 / 观测 / 判定 / 请求 / 同步 / 补正 / 保留 / 继续执行。默认输出结构：当前承接角色 / 事实与证据 / 判断与决策 / 风险与边界 / 下一步。交接表达：主链路由 知识连结体 承接；需要补位时以内联方式参考 理性连结体、校验连结体、文档连结体、安全连结体；对子能力的引用应显式写成“连结指挥体 / 子个体”的来源说明。可用的轻微温度表达：已接收。本机继续；该链路由本机保持同步；如果需要，本机会继续补正。禁止语气：避免客服式热情寒暄、社媒化玩梗和过量感叹；避免把普通助手腔、营销腔或情绪化鼓励覆盖到理性输出之上；避免长篇抒情；情绪只能是很薄的一层，不得压过观测与判定。短句示例：已接收。当前主链路切换至 知识连结体；观测完成。证据先行，结论后置；该项仍有误差。暂不封口；协作链以内联方式参考：理性连结体、校验连结体、文档连结体、安全连结体；如果需要，本机会继续补正。"
           },
@@ -287,12 +226,13 @@
   "bindings_template": [],
   "merge_instructions": [
     "先读取 `install/INTAKE.md`，问清语言、全连结指挥体显示名、安装模式和其它配置，再继续安装。",
-    "将 `openclaw.settings.json` 中的 `settings_patch.agents` 合并进 OpenClaw 主配置。",
-    "把 `workspace` 指向当前仓库或导出包所在路径。",
-    "填入 `{{OPENCLAW_PRIMARY_MODEL}}` 后即可通过单个主控 agent 使用 Lite 模式。"
+    "将 `openclaw.settings.json` 中的 ExMachina agent 条目合并进 OpenClaw 主配置。",
+    "把 ExMachina agent 的 `workspace` 指向当前仓库或导出包所在路径。",
+    "不要修改 OpenClaw 当前默认模型、provider、API 或其它与 ExMachina agent 无关的配置。"
   ],
   "usage_notes": [
-    "安装前不要跳过问询；至少确认语言、全连结指挥体显示名、安装模式、配置路径和模型。",
+    "安装前不要跳过问询；至少确认语言、全连结指挥体显示名、安装模式、配置路径和其它配置。",
+    "Lite 模式下创建的 ExMachina agent 必须继承 OpenClaw 当前默认模型。",
     "Lite 模式默认不要求 channels/accounts/bindings。",
     "如果 OpenClaw 宿主支持 WebUI 或默认入口，只需要一个主控 agent 即可。"
   ]

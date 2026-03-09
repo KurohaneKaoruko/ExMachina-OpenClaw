@@ -30,6 +30,7 @@ class CliTests(unittest.TestCase):
             self.assertIn("install_intake", settings_bundle)
             self.assertIn("template_variables", settings_bundle)
             self.assertIn("OPENCLAW_INSTALL_LANGUAGE", settings_bundle["template_variables"])
+            self.assertNotIn("OPENCLAW_PRIMARY_MODEL", settings_bundle["template_variables"])
             self.assertEqual(settings_bundle["dialogue_contracts"]["exmachina-main"]["role_name"], "主控体")
             self.assertTrue(settings_bundle["dialogue_contracts"]["exmachina-main"]["sample_utterances"])
             self.assertTrue((output / "install" / "SETTINGS.md").exists())
@@ -88,7 +89,13 @@ class CliTests(unittest.TestCase):
             self.assertIn("openclaw_directive", manifest)
             self.assertTrue(manifest["openclaw_directive"]["quick_start"])
             self.assertNotIn("metadata", settings_bundle["settings_patch"]["agents"]["list"][0])
+            self.assertNotIn("model", settings_bundle["settings_patch"]["agents"]["list"][0])
+            self.assertNotIn("defaults", settings_bundle["settings_patch"]["agents"])
             self.assertEqual(settings_bundle["settings_patch"]["agents"]["list"][0]["sandbox"]["mode"], "off")
+            self.assertEqual(
+                settings_bundle["settings_patch"]["agents"]["list"][0]["workspace"],
+                "https://code.example.com/example/exmachina",
+            )
             self.assertEqual(runtime_spec["runtime_role"], "single-agent-conductor")
             self.assertIn("ordered_execution_steps", task_board)
             self.assertTrue(task_board["ordered_execution_steps"])
@@ -169,11 +176,12 @@ class CliTests(unittest.TestCase):
             self.assertIn("## Full 最短路径", quickstart_doc)
             self.assertIn("openclaw.agents.plan.json", quickstart_doc)
             self.assertIn("安装模式", intake_doc)
-            self.assertEqual(settings_bundle["settings_patch"]["agents"]["defaults"]["sandbox"]["mode"], "non-main")
-            self.assertEqual(settings_bundle["settings_patch"]["agents"]["defaults"]["sandbox"]["scope"], "agent")
+            self.assertNotIn("defaults", settings_bundle["settings_patch"]["agents"])
             for agent in settings_bundle["settings_patch"]["agents"]["list"]:
                 self.assertNotIn("metadata", agent)
+                self.assertNotIn("model", agent)
                 self.assertIn(agent["sandbox"]["mode"], {"off", "all"})
+                self.assertEqual(agent["workspace"], "https://code.example.com/example/exmachina")
 
     def test_doctor_command_outputs_json_report(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
