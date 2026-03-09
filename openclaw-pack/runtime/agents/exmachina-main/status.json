@@ -4,8 +4,28 @@
   "current_stage": null,
   "assignments": [
     {
-      "assignment_id": "assignment-controller-overview",
+      "assignment_id": "assignment-lite-controller",
       "stage_name": "全局协调",
+      "status": "pending"
+    },
+    {
+      "assignment_id": "assignment-lite-stage-01",
+      "stage_name": "阶段 1 · 任务澄清",
+      "status": "pending"
+    },
+    {
+      "assignment_id": "assignment-lite-stage-02",
+      "stage_name": "阶段 2 · 主链路交付",
+      "status": "pending"
+    },
+    {
+      "assignment_id": "assignment-lite-stage-03",
+      "stage_name": "阶段 3 · 交叉校验",
+      "status": "pending"
+    },
+    {
+      "assignment_id": "assignment-lite-stage-04",
+      "stage_name": "阶段 4 · 集成交接",
       "status": "pending"
     }
   ],

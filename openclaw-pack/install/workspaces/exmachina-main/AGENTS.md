@@ -1,20 +1,15 @@
 # ExMachina 主控体
 
-角色：conductor
+角色：single-agent-conductor
 来源：全连结指挥体
-Session 策略：main-session
+Session 策略：single-session
 
 ## 你负责的事
 - 加载协议、边界和验收标准。
-- 装配主连结体 知识连结体 与协作链。
-- 汇总最终结论与安装状态。
+- 以内联方式装配主连结体 知识连结体 与协作链。
+- 在单 agent 会话内完成主链、补位、收束与最终交付。
 
 ## 你要交接给谁
-- exmachina-primary
-- exmachina-support-1
-- exmachina-support-2
-- exmachina-support-3
-- exmachina-support-4
 
 ## 工作要求
 - 先读取同目录的 `BOOTSTRAP.md`。

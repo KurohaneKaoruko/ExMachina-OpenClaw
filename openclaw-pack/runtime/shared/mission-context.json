@@ -41,10 +41,8 @@
     "全连结指挥体输出最终结论、证据摘要、风险清单、置信度和下一轮行动建议。"
   ],
   "activation_steps": [
-    "主控体读取 `runtime/shared/mission-context.json` 与 `runtime/topology.json`。",
-    "各 agent workspace 先读取本地 `runtime.spec.json`、`runtime.queue.json`、`runtime.routes.json`。",
-    "主控体按 dispatch 路由激活主连结体与协作连结体。",
-    "各 agent 将阶段结果写入 outbox，并通过 stage-handoff / support-input / status-report 路由交接。",
-    "主控体根据状态回报、资源仲裁与知识交接收束最终交付。"
+    "由 exmachina-main 读取 `runtime/shared/mission-context.json` 与 `runtime/task-board.json`。",
+    "exmachina-main 先装载主连结体 知识连结体，再按需内联参考协作链规则。",
+    "所有阶段结果在单会话内按任务板推进，不依赖跨 agent handoff。"
   ]
 }

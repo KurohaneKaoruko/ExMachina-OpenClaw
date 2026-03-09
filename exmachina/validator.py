@@ -7,21 +7,89 @@ from pathlib import Path
 from typing import Any
 
 
-REQUIRED_TOP_CONDUCTOR_KEYS = {"name", "mission", "principles"}
+REQUIRED_TOP_CONDUCTOR_KEYS = {
+    "name",
+    "mission",
+    "principles",
+    "english_alias",
+    "identity",
+    "bilingual_summary",
+    "core_duties",
+    "operating_rules",
+    "handoff_policy",
+    "escalation_policy",
+    "anti_patterns",
+    "quality_bar",
+}
 REQUIRED_LINK_BODY_KEYS = {
     "entity_type",
     "identity",
+    "english_alias",
+    "bilingual_summary",
     "member_selection_rule",
     "focus",
     "keywords",
     "reason_template",
     "deliverables",
+    "usage_scenarios",
+    "entry_conditions",
+    "exit_conditions",
+    "deliverable_contracts",
+    "support_capabilities",
+    "collaboration_rules",
+    "resource_priorities",
+    "boundary_rules",
+    "fallback_modes",
+    "failure_modes",
     "rationality_obligations",
+    "default_stage_mapping",
+    "recommended_skill",
     "conductor_file",
     "child_agent_files",
 }
-REQUIRED_LINK_CONDUCTOR_KEYS = {"name", "mission", "duties", "checks"}
-REQUIRED_CHILD_AGENT_KEYS = {"name", "mission", "outputs", "checks"}
+REQUIRED_LINK_CONDUCTOR_KEYS = {
+    "name",
+    "mission",
+    "duties",
+    "checks",
+    "english_alias",
+    "identity",
+    "bilingual_summary",
+    "stage_ownership",
+    "dispatch_rules",
+    "member_activation_rules",
+    "dependency_rules",
+    "conflict_resolution_rules",
+    "evidence_requirements",
+    "handoff_contract_template",
+    "reporting_contract",
+    "escalation_policy",
+    "failure_modes",
+    "anti_patterns",
+}
+REQUIRED_CHILD_AGENT_KEYS = {
+    "name",
+    "mission",
+    "outputs",
+    "checks",
+    "english_alias",
+    "identity",
+    "bilingual_summary",
+    "core_responsibilities",
+    "non_goals",
+    "inputs",
+    "input_requirements",
+    "workflow",
+    "reasoning_rules",
+    "output_contract",
+    "handoff_targets",
+    "handoff_payloads",
+    "escalation_triggers",
+    "failure_modes",
+    "anti_patterns",
+    "quality_bar",
+    "tools_guidance",
+}
 
 
 @dataclass
@@ -50,6 +118,7 @@ def validate_profile_assets(profile_path: str | None = None) -> AssetValidationR
         result.errors.append(f"加载运行时画像失败：{exc}。")
 
     _validate_top_conductor(raw_profile, root, result)
+    _validate_profile_metadata(raw_profile, root, result)
     _validate_selection_rules(raw_profile, result)
     _validate_link_bodies(raw_profile, resolved_profile, root, result)
     _validate_orphan_assets(raw_profile, root, result)
@@ -82,6 +151,21 @@ def _validate_top_conductor(raw_profile: dict[str, Any], root: Path, result: Ass
     if missing:
         result.errors.append(f"顶层指挥体缺少字段：{', '.join(missing)}。")
     result.checked_conductors += 1
+
+
+def _validate_profile_metadata(raw_profile: dict[str, Any], root: Path, result: AssetValidationResult) -> None:
+    for key in ("content_policy", "asset_defaults", "validation_policy", "skill_catalog"):
+        if key not in raw_profile:
+            result.errors.append(f"default_profile.json 缺少顶层字段：{key}。")
+
+    repo_root = root.parent.parent if root.parent.name == "exmachina" else root.parent
+    for body_name, skill in raw_profile.get("skill_catalog", {}).items():
+        skill_path = skill.get("skill_path")
+        if not skill_path:
+            result.errors.append(f"skill_catalog 中 `{body_name}` 缺少 `skill_path`。")
+            continue
+        if not (repo_root / skill_path).exists():
+            result.errors.append(f"skill_catalog 中 `{body_name}` 引用了不存在的 skill：{skill_path}。")
 
 
 def _validate_selection_rules(raw_profile: dict[str, Any], result: AssetValidationResult) -> None:
@@ -153,6 +237,14 @@ def _validate_link_bodies(
         resolved_body = resolved_profile.get("link_bodies", {}).get(body_name, {})
         if resolved_body.get("body_file") != body_file:
             result.errors.append(f"连结体 `{body_name}` 在加载后丢失或改写了 `body_file`。")
+
+        recommended_skill = body_payload.get("recommended_skill", {})
+        skill_path = recommended_skill.get("skill_path")
+        repo_root = root.parent.parent if root.parent.name == "exmachina" else root.parent
+        if not skill_path:
+            result.errors.append(f"连结体 `{body_name}` 缺少 `recommended_skill.skill_path`。")
+        elif not (repo_root / skill_path).exists():
+            result.errors.append(f"连结体 `{body_name}` 引用了不存在的推荐 skill：{skill_path}。")
 
         result.checked_link_bodies += 1
 

@@ -16,6 +16,8 @@ flowchart TD
     EXP --> MJ[mission.json]
     EXP --> MM[mission.md]
     EXP --> PACK[openclaw-pack/]
+    EXP --> RUNTIME[runtime/]
+    EXP --> SKILLS[skills/ body skills]
 
     PACK --> BOOT[BOOTSTRAP.md]
     PACK --> MANI[manifest.json]
@@ -28,6 +30,11 @@ flowchart TD
 ```
 
 ## 运行时协作图
+
+### 模式说明
+
+- **Lite**：默认模式，只要求单个 `exmachina-main` 会话，主连结体与协作链以内联方式执行，不依赖外部多 agent 绑定与路由。
+- **Full**：显式高级模式，保留主控体、主连结体、协作连结体、多 workspace、handoff routes 与状态回流机制。
 
 ```mermaid
 flowchart LR
@@ -108,7 +115,10 @@ flowchart LR
 - `exmachina/data/default_profile.json` 应尽量只保留索引信息，把连结体主体放在 `exmachina/data/link_bodies/`。
 - 源码层的全连结指挥体与各连结指挥体定义集中在 `exmachina/data/conductors/`，`default_profile.json` 只保留 `conductor_file` 引用。
 - 源码层的子个体定义集中在 `exmachina/data/subagents/`，`default_profile.json` 只保留 `child_agent_files` 引用；同名子个体应尽量复用通用定义。
+- richer prompt schema 变更后，必须同步校验 `validator.py`、导出文档和 runtime JSON。
+- repo-local body skills 应与 `recommended_skill` / `skill_catalog` 保持一致。
 - 在结构演化后，应运行 `python -m exmachina validate-assets` 检查索引是否悬空、缺失或出现孤儿文件。
+- 在结构演化后，应运行 `python -m unittest discover -s tests -p "test_*.py"` 验证 planner、exporter、runtime 与 assets 一致。
 - 子个体提示词应集中维护在 `openclaw-pack/subagents/`，连结体文件只负责引用，不重复内嵌。
 - 生成产物变更后应重生成仓库内 `openclaw-pack/`。
 - README 和本文件应始终能解释当前代码实际导出的结构。

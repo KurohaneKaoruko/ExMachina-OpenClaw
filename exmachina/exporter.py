@@ -101,6 +101,11 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
     manifest = {
         "project_name": "ExMachina",
         "pack_name": "ExMachina OpenClaw Pack",
+        "mode": plan.mode,
+        "compatibility": {
+            "requires_multi_agent_binding": plan.openclaw_install_plan.requires_multi_agent_binding,
+            "requires_external_routing": plan.runtime_topology.requires_external_routing,
+        },
         "mission_title": plan.mission_title,
         "ontology": {
             "conductor": "单一顶层调度体",
@@ -119,6 +124,9 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         "resource_arbitration": plan.resource_arbitration.to_dict(),
         "openclaw_install_plan": plan.openclaw_install_plan.to_dict(),
         "runtime_topology": plan.runtime_topology.to_dict(),
+        "skill_bindings": {
+            body.name: body.recommended_skill for body in [plan.primary_link_body, *plan.support_link_bodies]
+        },
         "conductor": {
             "name": plan.conductor_name,
             "path": "conductor/00_全连结指挥体.md",
@@ -138,9 +146,28 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
             "subagents_dir": "subagents",
             "install_dir": "install",
             "runtime_dir": "runtime",
+            "skills_dir": "skills",
             "workflow": "workflows/mission-loop.md",
         },
     }
+    if plan.mode == "lite":
+        manifest["openclaw_directive"] = {
+            "entry_agent_id": "exmachina-main",
+            "execution_style": "single-session-inline-support",
+            "primary_link_body": plan.primary_link_body.name,
+            "support_link_bodies": [body.name for body in plan.support_link_bodies],
+            "quick_start": [
+                "读取 manifest.json 确认模式、主连结体和协作链。",
+                "读取 protocols/ 下的四份协议，再读取 conductor/00_全连结指挥体.md。",
+                "读取主连结体、主连结指挥体和相关子个体文档。",
+                "读取 runtime/task-board.json，按 ordered_execution_steps 顺序在单会话内推进任务。",
+            ],
+            "do_not_assume": [
+                "不要假设宿主支持多 agent 自动绑定。",
+                "不要假设存在外部路由器或跨 agent 消息总线。",
+                "默认由 exmachina-main 在单会话内消费协作链规则。",
+            ],
+        }
 
     (target / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     (target / "BOOTSTRAP.md").write_text(render_bootstrap(plan), encoding="utf-8")
@@ -164,11 +191,54 @@ def export_openclaw_pack(plan: MissionPlan, out_dir: str | Path) -> Path:
         "activation_steps": plan.runtime_topology.activation_steps,
     }
     task_board = {
+        "mode": plan.mode,
         "controller_agent_id": plan.runtime_topology.controller_agent_id,
         "coordination_mode": plan.runtime_topology.coordination_mode,
         "assignments": [assignment.to_dict() for assignment in plan.runtime_topology.assignments],
         "routes": [route.to_dict() for route in plan.runtime_topology.routes],
     }
+    if plan.mode == "lite":
+        task_board["single_session_brief"] = {
+            "primary_link_body": plan.primary_link_body.name,
+            "support_link_bodies": [body.name for body in plan.support_link_bodies],
+            "operator": "exmachina-main",
+            "execution_goal": "在单会话内依次执行主链、补位、校验与最终收束。",
+        }
+        task_board["ordered_execution_steps"] = [
+            {
+                "step": 1,
+                "title": "加载协议与主控规则",
+                "instruction": "先读取 protocols/ 与 conductor/00_全连结指挥体.md，建立统一理性约束。",
+            },
+            {
+                "step": 2,
+                "title": "执行主连结体",
+                "instruction": f"主责按 {plan.primary_link_body.name} 的连结体、指挥体和子个体定义推进主链交付。",
+            },
+            {
+                "step": 3,
+                "title": "内联消费协作链",
+                "instruction": f"按需内联参考协作连结体：{_body_names(plan.support_link_bodies)}，补足理性校准、验证、文档、安全等视角。",
+            },
+            {
+                "step": 4,
+                "title": "按任务板推进阶段",
+                "instruction": "逐项完成 assignments 中的阶段目标、交付物和出关检查，不假设跨 agent handoff。",
+            },
+            {
+                "step": 5,
+                "title": "统一收束输出",
+                "instruction": "输出最终结论时保留证据、风险、边界、置信度和下一步。",
+            },
+        ]
+        task_board["inline_support_brief"] = [
+            {
+                "support_body": body.name,
+                "use_when": body.usage_scenarios[0] if body.usage_scenarios else "需要对应补位能力时",
+                "consume_as": "内联参考规则，不创建额外 agent",
+            }
+            for body in plan.support_link_bodies
+        ]
     (runtime_dir / "topology.json").write_text(
         json.dumps(plan.runtime_topology.to_dict(), ensure_ascii=False, indent=2),
         encoding="utf-8",
@@ -436,11 +506,44 @@ def render_markdown(plan: MissionPlan) -> str:
 
 
 def render_bootstrap(plan: MissionPlan) -> str:
+    if plan.mode == "lite":
+        lines = [
+            "# ExMachina · OpenClaw 自举入口",
+            "",
+            "这是 Lite 默认入口：目标是在 **单个主控会话** 中完成装载和执行。",
+            "",
+            "## 当前模式",
+            "- 模式：lite",
+            "- 多 agent 绑定：不需要",
+            "- 外部路由：不需要",
+            "",
+            "## 你只需要做的事",
+            "1. 读取 `manifest.json`，确认当前任务、主连结体和协作链。",
+            "2. 读取 `protocols/` 下的 4 份协议，再读取 `conductor/00_全连结指挥体.md`。",
+            "3. 读取主连结体、主连结指挥体，并把协作连结体当作内联参考规则按需消费。",
+            "4. 读取 `runtime/README.md` 与 `runtime/task-board.json`，由 `exmachina-main` 单会话推进任务。",
+            "",
+            "## 当前任务",
+            f"- 标题：{plan.mission_title}",
+            f"- 主连结体：{plan.primary_link_body.name}",
+            f"- 协作连结体：{_body_names(plan.support_link_bodies)}",
+            "",
+            "## 启动语",
+            plan.openclaw_install_prompt,
+            "",
+        ]
+        return "\n".join(lines)
+
     lines = [
         "# ExMachina · OpenClaw 自举入口",
         "",
         "你现在要把此仓库作为一个理性多智能体覆盖层加载。",
         "在这里，OpenClaw 会被组织成一个由多个连结体协作的结构化工作流。",
+        "",
+        "## 当前模式",
+        f"- 模式：{plan.mode}",
+        f"- 是否要求多 agent 绑定：{'是' if plan.openclaw_install_plan.requires_multi_agent_binding else '否'}",
+        f"- 是否要求外部路由：{'是' if plan.runtime_topology.requires_external_routing else '否'}",
         "",
         "## 第一原则",
         "- 先加载协议，再加载角色。",
@@ -480,6 +583,9 @@ def render_pack_readme(plan: MissionPlan) -> str:
         "",
         "这是一个可直接放入远程仓库并供 OpenClaw 读取的协作包。",
         "项目名为 ExMachina，用于为 OpenClaw 提供协议化、可装载的多智能体协作包。",
+        f"默认导出模式：{plan.mode}",
+        f"多 agent 绑定要求：{'需要' if plan.openclaw_install_plan.requires_multi_agent_binding else '不需要'}",
+        f"外部路由要求：{'需要' if plan.runtime_topology.requires_external_routing else '不需要'}",
         "",
         f"当前任务：{plan.mission_title}",
         f"主连结体：{plan.primary_link_body.name}",
@@ -508,24 +614,57 @@ def render_pack_readme(plan: MissionPlan) -> str:
 
 
 def render_install_readme(plan: MissionPlan) -> str:
-    lines = [
-        "# OpenClaw 安装指南",
-        "",
-        f"摘要：{plan.openclaw_install_plan.summary}",
-        "",
-        "## 最简安装路径",
+    if plan.mode == "lite":
+        lines = [
+            "# OpenClaw 安装指南",
+            "",
+            f"摘要：{plan.openclaw_install_plan.summary}",
+            "",
+            "## 最简安装路径",
+            "1. 将当前仓库作为 OpenClaw workspace 打开，或直接把仓库链接交给 OpenClaw。",
+            "2. 读取仓库根目录 `BOOTSTRAP.md`。",
+            "3. 运行 `python -m exmachina validate-assets`，确认资产引用完整。",
+            "4. 读取 `openclaw-pack/BOOTSTRAP.md` 与 `openclaw-pack/runtime/README.md`。",
+            "5. 让 `exmachina-main` 作为默认入口，在单会话内装载主连结体与协作链说明并执行任务。",
+            "",
+            "## 生成内容",
+            "- `openclaw.agents.plan.json`：Lite 单 agent 安装计划",
+            "- `workspaces/exmachina-main/`：默认主控 workspace 引导文件模板",
+            "- `runtime/`：单会话可消费的任务板、上下文和主控运行时文件",
+            "",
+            "## 说明",
+            "- Lite 模式不要求多 agent 绑定。",
+            "- Lite 模式不要求外部路由器。",
+            "- 协作连结体仍会导出，但默认以内联参考规则方式消费。",
+            "",
+        ]
+        return "\n".join(lines)
+
+    minimal_path = [
         "1. 将当前仓库作为 OpenClaw workspace 打开，或直接把仓库链接交给 OpenClaw。",
         "2. 读取仓库根目录 `BOOTSTRAP.md`。",
         "3. 运行 `python -m exmachina validate-assets`，确认引用完整。",
         "4. 读取 `install/openclaw.agents.plan.json`，按其中的 agents / binding_plans 创建多 agent。",
         "5. 让 `exmachina-main` 作为默认入口重新读取 `openclaw-pack/BOOTSTRAP.md` 并进入执行。",
-        "",
-        "## 生成内容",
+    ]
+    generated_content = [
         "- `openclaw.agents.plan.json`：多 agent 安装与绑定计划",
         "- `workspaces/<agent_id>/`：每个 agent 的 workspace 引导文件模板",
-        "",
-        "## 安装步骤",
     ]
+
+    lines = [
+        "# OpenClaw 安装指南",
+        "",
+        f"摘要：{plan.openclaw_install_plan.summary}",
+        f"模式：{plan.openclaw_install_plan.mode}",
+        f"是否要求多 agent 绑定：{'是' if plan.openclaw_install_plan.requires_multi_agent_binding else '否'}",
+        "",
+        "## 最简安装路径",
+    ]
+    lines.extend(minimal_path)
+    lines.extend(["", "## 生成内容"])
+    lines.extend(generated_content)
+    lines.extend(["", "## 安装步骤"])
     lines.extend(f"- {item}" for item in plan.openclaw_install_plan.install_steps)
     lines.extend(["", "## 自举步骤"])
     lines.extend(f"- {item}" for item in plan.openclaw_install_plan.self_bootstrap_steps)
@@ -538,9 +677,24 @@ def render_runtime_readme(plan: MissionPlan) -> str:
         "# ExMachina Runtime",
         "",
         "这一层不再只是角色说明，而是给 OpenClaw 多 workspace 协作使用的运行时拓扑。",
+        f"模式：{plan.runtime_topology.mode}",
         f"主控体：{plan.runtime_topology.controller_agent_id}",
         f"协调模式：{plan.runtime_topology.coordination_mode}",
+        f"是否要求外部路由：{'是' if plan.runtime_topology.requires_external_routing else '否'}",
         "",
+    ]
+    if plan.mode == "lite":
+        lines.extend(
+            [
+                "## Lite 说明",
+                "- 只有 `exmachina-main` 会被默认使用。",
+                "- 主连结体与协作链以内联方式消费，不需要跨 agent handoff。",
+                "- `task-board.json` 是单会话推进任务的主入口。",
+                "",
+            ]
+        )
+    lines.extend(
+        [
         "## 关键文件",
         "- `topology.json`：完整 agent 拓扑、路由、任务分配与激活步骤",
         "- `shared/mission-context.json`：全局任务上下文与验收标准",
@@ -550,8 +704,13 @@ def render_runtime_readme(plan: MissionPlan) -> str:
         "- `task-board.json`：运行时任务板",
         "- `agents/<agent_id>/`：每个 agent 的 spec / queue / routes / status / inbox / outbox",
         "",
-        "## 启动步骤",
-    ]
+        "## Skill 绑定",
+    ])
+    lines.extend(
+        f"- {body.name}：`{body.recommended_skill.get('skill_path', 'N/A')}`"
+        for body in [plan.primary_link_body, *plan.support_link_bodies]
+    )
+    lines.extend(["", "## 启动步骤"])
     lines.extend(f"- {item}" for item in plan.runtime_topology.activation_steps)
     lines.extend(["", "## 协调规则"])
     lines.extend(f"- {item}" for item in plan.runtime_topology.coordination_rules)
@@ -634,7 +793,7 @@ def render_workspace_tools_md(plan: MissionPlan) -> str:
         "",
         "推荐使用：",
         "- `python -m exmachina validate-assets`：校验当前仓库资产引用",
-        "- `python skills/exmachina-project-maintainer/scripts/regenerate_demo_pack.py`：重生成示例包",
+        "- `python skills/scripts/regenerate_demo_pack.py`：重生成示例包",
         "- `openclaw-pack/install/openclaw.agents.plan.json`：查看安装计划",
         "- `openclaw-pack/runtime/topology.json`：查看运行时拓扑、路由和任务板",
         "",
@@ -642,6 +801,22 @@ def render_workspace_tools_md(plan: MissionPlan) -> str:
 
 
 def render_workspace_bootstrap_md(agent: OpenClawInstallAgent, plan: MissionPlan) -> str:
+    if plan.mode == "lite":
+        lines = [
+            f"# {agent.display_name} · BOOTSTRAP",
+            "",
+            f"你当前是 `{agent.agent_id}`。这是 Lite 单会话模式，请按以下顺序开始：",
+            "1. 读取同目录 `AGENTS.md`、`SOUL.md`、`TOOLS.md`。",
+            "2. 读取同目录 `RUNTIME.md`、`runtime.spec.json`、`runtime.queue.json`。",
+            "3. 读取仓库根目录 `openclaw-pack/manifest.json` 与 `openclaw-pack/runtime/task-board.json`。",
+            f"4. 以单会话方式主责执行主连结体与协作链：{plan.primary_link_body.name} / {_body_names(plan.support_link_bodies)}。",
+            "5. 不假设存在额外 agent；所有补位规则以内联参考方式消费。",
+            "",
+            f"主任务：{plan.task}",
+            "",
+        ]
+        return "\n".join(lines)
+
     lines = [
         f"# {agent.display_name} · BOOTSTRAP",
         "",
@@ -677,6 +852,19 @@ def render_workspace_runtime_md(
     lines.extend(f"- {item}" for item in runtime_agent_spec.responsibilities)
     lines.extend(["", "## 运行时要求"])
     lines.extend(f"- {item}" for item in runtime_agent_spec.coordination_rules)
+    if runtime_agent_spec.operating_playbook:
+        lines.extend(["", "## 操作剧本"])
+        lines.extend(f"- {item}" for item in runtime_agent_spec.operating_playbook)
+    if runtime_agent_spec.escalation_triggers:
+        lines.extend(["", "## 升级触发"])
+        lines.extend(f"- {item}" for item in runtime_agent_spec.escalation_triggers)
+    if runtime_agent_spec.recommended_skill:
+        lines.extend([
+            "",
+            "## 推荐 Skill",
+            f"- `skill_id`：{runtime_agent_spec.recommended_skill.get('skill_id', 'N/A')}",
+            f"- `skill_path`：{runtime_agent_spec.recommended_skill.get('skill_path', 'N/A')}",
+        ])
     lines.extend([
         "",
         "## 任务来源",
@@ -741,6 +929,18 @@ def render_conductor(plan: MissionPlan) -> str:
         f"# {plan.conductor_name}",
         "",
         f"使命：{plan.conductor_mission}",
+        f"身份：{plan.conductor_profile.identity}",
+        f"双语摘要：{plan.conductor_profile.bilingual_summary}",
+        "",
+        "## 核心职责",
+    ]
+    lines.extend(f"- {item}" for item in plan.conductor_profile.core_duties)
+    lines.extend([
+        "",
+        "## 运行规则",
+    ])
+    lines.extend(f"- {item}" for item in plan.conductor_profile.operating_rules)
+    lines.extend([
         "",
         "## 绝对理性约束",
         f"- 你必须先加载《{plan.rationality_protocol.name}》。",
@@ -755,8 +955,16 @@ def render_conductor(plan: MissionPlan) -> str:
         "- 汇总所有连结指挥体、子个体与连结体的结果，给出最终交付、风险和下一步建议。",
         "",
         "## 原则",
-    ]
+    ])
     lines.extend(f"- {item}" for item in plan.conductor_principles)
+    lines.extend(["", "## 交接政策"])
+    lines.extend(f"- {item}" for item in plan.conductor_profile.handoff_policy)
+    lines.extend(["", "## 升级政策"])
+    lines.extend(f"- {item}" for item in plan.conductor_profile.escalation_policy)
+    lines.extend(["", "## 反模式"])
+    lines.extend(f"- {item}" for item in plan.conductor_profile.anti_patterns)
+    lines.extend(["", "## 质量标准"])
+    lines.extend(f"- {item}" for item in plan.conductor_profile.quality_bar)
     lines.append("")
     return "\n".join(lines)
 
@@ -767,17 +975,49 @@ def render_link_body(body: LinkBody, child_file_map: dict[str, str]) -> str:
         "",
         f"实体类型：{body.entity_type}",
         f"身份说明：{body.identity}",
+        f"双语摘要：{body.bilingual_summary}",
+        f"英文别名：{body.english_alias}",
         f"焦点：{body.focus}",
         f"派发原因：{body.reason}",
         f"成员选择规则：{body.member_selection_rule}",
         f"内部连结指挥体：{body.link_conductor.name}",
         f"成员数量：{len(body.child_agents)}",
         "",
-        "## 理性义务",
+        "## 使用场景",
     ]
+    lines.extend(f"- {item}" for item in body.usage_scenarios)
+    lines.extend(["", "## 进入条件"])
+    lines.extend(f"- {item}" for item in body.entry_conditions)
+    lines.extend(["", "## 退出条件"])
+    lines.extend(f"- {item}" for item in body.exit_conditions)
+    lines.extend([
+        "",
+        "## 理性义务",
+    ])
     lines.extend(f"- {item}" for item in body.rationality_obligations)
     lines.extend(["", "## 交付物"])
     lines.extend(f"- {item}" for item in body.deliverables)
+    lines.extend(["", "## 交付契约"])
+    lines.extend(f"- {item}" for item in body.deliverable_contracts)
+    lines.extend(["", "## 协作能力"])
+    lines.extend(f"- {item}" for item in body.support_capabilities)
+    lines.extend(["", "## 协作规则"])
+    lines.extend(f"- {item}" for item in body.collaboration_rules)
+    lines.extend(["", "## 资源优先级"])
+    lines.extend(f"- {item}" for item in body.resource_priorities)
+    lines.extend(["", "## 边界规则"])
+    lines.extend(f"- {item}" for item in body.boundary_rules)
+    lines.extend(["", "## 回退模式"])
+    lines.extend(f"- {item}" for item in body.fallback_modes)
+    lines.extend(["", "## 失败模式"])
+    lines.extend(f"- {item}" for item in body.failure_modes)
+    lines.extend([
+        "",
+        "## 推荐 Skill",
+        f"- `skill_id`：{body.recommended_skill.get('skill_id', 'N/A')}",
+        f"- `skill_path`：{body.recommended_skill.get('skill_path', 'N/A')}",
+        f"- 用途：{body.recommended_skill.get('purpose', 'N/A')}",
+    ])
     lines.extend([
         "",
         "## 内部结构",
@@ -799,16 +1039,47 @@ def render_link_body_conductor(body_name: str, conductor: LinkConductor) -> str:
         "",
         f"所属连结体：{body_name}",
         f"职责：{conductor.mission}",
+        f"身份：{conductor.identity}",
+        f"双语摘要：{conductor.bilingual_summary}",
+        f"英文别名：{conductor.english_alias}",
         "",
         "## 主要职责",
     ]
     lines.extend(f"- {item}" for item in conductor.duties)
     lines.extend([
         "",
+        "## 主责阶段",
+    ])
+    lines.extend(f"- {item}" for item in conductor.stage_ownership)
+    lines.extend(["", "## 调度规则"])
+    lines.extend(f"- {item}" for item in conductor.dispatch_rules)
+    lines.extend(["", "## 成员激活规则"])
+    lines.extend(f"- {item}" for item in conductor.member_activation_rules)
+    lines.extend(["", "## 依赖规则"])
+    lines.extend(f"- {item}" for item in conductor.dependency_rules)
+    lines.extend(["", "## 冲突收束规则"])
+    lines.extend(f"- {item}" for item in conductor.conflict_resolution_rules)
+    lines.extend(["", "## 证据要求"])
+    lines.extend(f"- {item}" for item in conductor.evidence_requirements)
+    lines.extend([
+        "",
         "## 额外理性责任",
         "- 强制成员区分事实、推断、假设和决策。",
         "- 发现证据冲突时必须触发反证或升级裁决。",
         "- 不允许成员跳过验证直接宣告终局结论。",
+        "",
+        "## 交接模板",
+    ])
+    lines.extend(f"- {item}" for item in conductor.handoff_contract_template)
+    lines.extend(["", "## 汇报契约"])
+    lines.extend(f"- {item}" for item in conductor.reporting_contract)
+    lines.extend(["", "## 升级政策"])
+    lines.extend(f"- {item}" for item in conductor.escalation_policy)
+    lines.extend(["", "## 失败模式"])
+    lines.extend(f"- {item}" for item in conductor.failure_modes)
+    lines.extend(["", "## 反模式"])
+    lines.extend(f"- {item}" for item in conductor.anti_patterns)
+    lines.extend([
         "",
         "## 检查项",
     ])
@@ -822,15 +1093,55 @@ def render_child_agent(child: ChildAgent) -> str:
         f"# {child.name}",
         "",
         f"职责：{child.mission}",
+        f"身份：{child.identity}",
+        f"双语摘要：{child.bilingual_summary}",
+        f"英文别名：{child.english_alias}",
+        "",
+        "## 核心职责",
+    ]
+    lines.extend(f"- {item}" for item in child.core_responsibilities)
+    lines.extend(["", "## 非目标"])
+    lines.extend(f"- {item}" for item in child.non_goals)
+    lines.extend(["", "## 输入"])
+    lines.extend(f"- {item}" for item in child.inputs)
+    lines.extend(["", "## 输入要求"])
+    lines.extend(f"- {item}" for item in child.input_requirements)
+    lines.extend(["", "## 工作流"])
+    lines.extend(f"- {item}" for item in child.workflow)
+    lines.extend(["", "## 推理规则"])
+    lines.extend(f"- {item}" for item in child.reasoning_rules)
+    lines.extend([
         "",
         "## 输出",
-    ]
+    ])
     lines.extend(f"- {item}" for item in child.outputs)
+    lines.extend([
+        "",
+        "## 输出契约",
+    ])
+    lines.extend(f"- {item}" for item in child.output_contract)
+    lines.extend(["", "## 交接对象"])
+    lines.extend(f"- {item}" for item in child.handoff_targets)
+    lines.extend(["", "## 交接载荷"])
+    lines.extend(f"- {item}" for item in child.handoff_payloads)
     lines.extend([
         "",
         "## 理性要求",
         "- 输出时必须区分事实、推断和结论。",
         "- 证据不足时必须显式输出未知与下一步验证。",
+        "",
+        "## 升级触发",
+    ])
+    lines.extend(f"- {item}" for item in child.escalation_triggers)
+    lines.extend(["", "## 失败模式"])
+    lines.extend(f"- {item}" for item in child.failure_modes)
+    lines.extend(["", "## 反模式"])
+    lines.extend(f"- {item}" for item in child.anti_patterns)
+    lines.extend(["", "## 质量标准"])
+    lines.extend(f"- {item}" for item in child.quality_bar)
+    lines.extend(["", "## 工具建议"])
+    lines.extend(f"- {item}" for item in child.tools_guidance)
+    lines.extend([
         "",
         "## 检查项",
     ])
@@ -855,6 +1166,9 @@ def _manifest_body_item(
         "name": body.name,
         "path": f"link-bodies/{body_index:02d}_{body.name}.md",
         "rationality_obligations": body.rationality_obligations,
+        "entry_conditions": body.entry_conditions,
+        "deliverable_contracts": body.deliverable_contracts,
+        "recommended_skill": body.recommended_skill,
         "link_conductor": {
             "name": body.link_conductor.name,
             "path": f"link-body-conductors/{conductor_index:02d}_{body.link_conductor.name}.md",
@@ -876,14 +1190,20 @@ def _render_link_body_section(body: LinkBody, primary: bool) -> list[str]:
         f"### {prefix}连结体：{body.name}",
         f"- 实体类型：{body.entity_type}",
         f"- 身份说明：{body.identity}",
+        f"- 双语摘要：{body.bilingual_summary}",
         f"- 焦点：{body.focus}",
         f"- 派发原因：{body.reason}",
         f"- 成员选择规则：{body.member_selection_rule}",
         f"- 内部连结指挥体：{body.link_conductor.name}",
         f"- 成员数量：{len(body.child_agents)}",
+        f"- 推荐 Skill：{body.recommended_skill.get('skill_id', 'N/A')}",
         "- 理性义务：",
     ]
     lines.extend(f"  - {item}" for item in body.rationality_obligations)
+    lines.append("- 进入条件：")
+    lines.extend(f"  - {item}" for item in body.entry_conditions)
+    lines.append("- 交付契约：")
+    lines.extend(f"  - {item}" for item in body.deliverable_contracts)
     lines.append("- 连结指挥体职责：")
     lines.extend(f"  - {item}" for item in body.link_conductor.duties)
     lines.append("- 交付物：")

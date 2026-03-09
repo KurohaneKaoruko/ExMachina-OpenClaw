@@ -1,70 +1,23 @@
 {
+  "mode": "lite",
   "controller_agent_id": "exmachina-main",
-  "coordination_mode": "workspace-file-runtime",
+  "coordination_mode": "single-agent-inline-support",
+  "requires_external_routing": false,
   "shared_artifacts": [
     {
       "name": "mission-context",
       "path": "runtime/shared/mission-context.json",
-      "description": "任务全局上下文、验收标准、主链与协作链拓扑。",
+      "description": "Lite 模式下的任务上下文、主链与协作链摘要。",
       "consumers": [
-        "exmachina-main",
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
-      ]
-    },
-    {
-      "name": "selection-trace",
-      "path": "runtime/shared/selection-trace.json",
-      "description": "主连结体和协作链的选择依据，供主控体与主链路校准。",
-      "consumers": [
-        "exmachina-main",
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
-      ]
-    },
-    {
-      "name": "knowledge-handoff",
-      "path": "runtime/shared/knowledge-handoff.json",
-      "description": "任务沉淀、开放问题、后续维护与知识交接清单。",
-      "consumers": [
-        "exmachina-main",
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
-      ]
-    },
-    {
-      "name": "resource-arbitration",
-      "path": "runtime/shared/resource-arbitration.json",
-      "description": "P0-P3 资源仲裁与冲突升级规则。",
-      "consumers": [
-        "exmachina-main",
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
+        "exmachina-main"
       ]
     },
     {
       "name": "task-board",
       "path": "runtime/task-board.json",
-      "description": "阶段任务队列、owner/support 分工和依赖关系。",
+      "description": "Lite 模式下由单 agent 消费的阶段任务板。",
       "consumers": [
-        "exmachina-main",
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
+        "exmachina-main"
       ]
     }
   ],
@@ -72,327 +25,102 @@
     {
       "agent_id": "exmachina-main",
       "display_name": "ExMachina 主控体",
-      "runtime_role": "conductor",
+      "runtime_role": "single-agent-conductor",
       "source": "全连结指挥体",
       "workspace_dir": "install/workspaces/exmachina-main",
       "responsibilities": [
-        "加载协议、边界和验收标准。",
-        "装配主连结体 知识连结体 与协作链。",
-        "汇总最终结论与安装状态。"
+        "在单 agent 会话中装载协议、主连结体、协作链和运行时任务板。",
+        "主责执行 知识连结体，并按需内联参考协作链：理性连结体、校验连结体、文档连结体、安全连结体。"
       ],
-      "handoff_targets": [
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
-      ],
+      "handoff_targets": [],
       "inbox_path": "runtime/agents/exmachina-main/inbox",
       "outbox_path": "runtime/agents/exmachina-main/outbox",
       "status_path": "runtime/agents/exmachina-main/status.json",
       "assignments": [
-        "assignment-controller-overview"
+        "assignment-lite-controller",
+        "assignment-lite-stage-01",
+        "assignment-lite-stage-02",
+        "assignment-lite-stage-03",
+        "assignment-lite-stage-04"
       ],
       "coordination_rules": [
-        "必须优先遵守 P0 闸门与主控裁决。",
-        "仅处理分配给自己的阶段任务，不擅自越权改写其他 agent 的职责。",
-        "所有输出必须通过 runtime handoff 路由或状态回报文件沉淀。"
-      ]
-    },
-    {
-      "agent_id": "exmachina-primary",
-      "display_name": "ExMachina 主连结体 · 知识连结体",
-      "runtime_role": "primary-link-body",
-      "source": "知识连结体",
-      "workspace_dir": "install/workspaces/exmachina-primary",
-      "responsibilities": [
-        "负责 知识连结体 的主链路交付。",
-        "术语与概念索引",
-        "关键决策与放弃原因记录"
+        "仍然优先遵守 P0 闸门与理性协议。",
+        "Lite 模式下禁止假设存在外部协作 agent 或外部路由器。",
+        "所有主链/补位区分通过任务板和结构化输出维持，而不是通过多 agent 绑定维持。"
       ],
-      "handoff_targets": [
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
+      "operating_playbook": [
+        "先执行主链，再按需要内联消费协作连结体规则。",
+        "冲突、风险和不可逆动作仍然要显式升级到主控裁决层。"
       ],
-      "inbox_path": "runtime/agents/exmachina-primary/inbox",
-      "outbox_path": "runtime/agents/exmachina-primary/outbox",
-      "status_path": "runtime/agents/exmachina-primary/status.json",
-      "assignments": [
-        "assignment-stage-01-owner-exmachina-primary",
-        "assignment-stage-02-owner-exmachina-primary",
-        "assignment-stage-04-owner-exmachina-primary"
+      "escalation_triggers": [
+        "发现当前宿主不支持额外绑定或路由时继续留在 Lite 模式。",
+        "主链结论无法独立收束时显式标记需要外部协作。"
       ],
-      "coordination_rules": [
-        "必须优先遵守 P0 闸门与主控裁决。",
-        "仅处理分配给自己的阶段任务，不擅自越权改写其他 agent 的职责。",
-        "所有输出必须通过 runtime handoff 路由或状态回报文件沉淀。"
-      ]
-    },
-    {
-      "agent_id": "exmachina-support-1",
-      "display_name": "ExMachina 协作连结体 · 理性连结体",
-      "runtime_role": "support-link-body",
-      "source": "理性连结体",
-      "workspace_dir": "install/workspaces/exmachina-support-1",
-      "responsibilities": [
-        "负责 理性连结体 的横向补位。",
-        "证据等级矩阵",
-        "反证与冲突裁决报告"
-      ],
-      "handoff_targets": [
-        "exmachina-main",
-        "exmachina-primary"
-      ],
-      "inbox_path": "runtime/agents/exmachina-support-1/inbox",
-      "outbox_path": "runtime/agents/exmachina-support-1/outbox",
-      "status_path": "runtime/agents/exmachina-support-1/status.json",
-      "assignments": [
-        "assignment-stage-01-support-exmachina-support-1",
-        "assignment-stage-02-support-exmachina-support-1",
-        "assignment-stage-03-owner-exmachina-support-1",
-        "assignment-stage-04-support-exmachina-support-1"
-      ],
-      "coordination_rules": [
-        "必须优先遵守 P0 闸门与主控裁决。",
-        "仅处理分配给自己的阶段任务，不擅自越权改写其他 agent 的职责。",
-        "所有输出必须通过 runtime handoff 路由或状态回报文件沉淀。"
-      ]
-    },
-    {
-      "agent_id": "exmachina-support-2",
-      "display_name": "ExMachina 协作连结体 · 校验连结体",
-      "runtime_role": "support-link-body",
-      "source": "校验连结体",
-      "workspace_dir": "install/workspaces/exmachina-support-2",
-      "responsibilities": [
-        "负责 校验连结体 的横向补位。",
-        "验证矩阵",
-        "回归结果"
-      ],
-      "handoff_targets": [
-        "exmachina-main",
-        "exmachina-primary"
-      ],
-      "inbox_path": "runtime/agents/exmachina-support-2/inbox",
-      "outbox_path": "runtime/agents/exmachina-support-2/outbox",
-      "status_path": "runtime/agents/exmachina-support-2/status.json",
-      "assignments": [
-        "assignment-stage-01-support-exmachina-support-2",
-        "assignment-stage-02-support-exmachina-support-2",
-        "assignment-stage-03-support-exmachina-support-2",
-        "assignment-stage-04-support-exmachina-support-2"
-      ],
-      "coordination_rules": [
-        "必须优先遵守 P0 闸门与主控裁决。",
-        "仅处理分配给自己的阶段任务，不擅自越权改写其他 agent 的职责。",
-        "所有输出必须通过 runtime handoff 路由或状态回报文件沉淀。"
-      ]
-    },
-    {
-      "agent_id": "exmachina-support-3",
-      "display_name": "ExMachina 协作连结体 · 文档连结体",
-      "runtime_role": "support-link-body",
-      "source": "文档连结体",
-      "workspace_dir": "install/workspaces/exmachina-support-3",
-      "responsibilities": [
-        "负责 文档连结体 的横向补位。",
-        "文档信息架构",
-        "面向使用者的说明与示例"
-      ],
-      "handoff_targets": [
-        "exmachina-main",
-        "exmachina-primary"
-      ],
-      "inbox_path": "runtime/agents/exmachina-support-3/inbox",
-      "outbox_path": "runtime/agents/exmachina-support-3/outbox",
-      "status_path": "runtime/agents/exmachina-support-3/status.json",
-      "assignments": [
-        "assignment-stage-01-support-exmachina-support-3",
-        "assignment-stage-02-support-exmachina-support-3",
-        "assignment-stage-03-support-exmachina-support-3",
-        "assignment-stage-04-support-exmachina-support-3"
-      ],
-      "coordination_rules": [
-        "必须优先遵守 P0 闸门与主控裁决。",
-        "仅处理分配给自己的阶段任务，不擅自越权改写其他 agent 的职责。",
-        "所有输出必须通过 runtime handoff 路由或状态回报文件沉淀。"
-      ]
-    },
-    {
-      "agent_id": "exmachina-support-4",
-      "display_name": "ExMachina 协作连结体 · 安全连结体",
-      "runtime_role": "support-link-body",
-      "source": "安全连结体",
-      "workspace_dir": "install/workspaces/exmachina-support-4",
-      "responsibilities": [
-        "负责 安全连结体 的横向补位。",
-        "威胁面与风险清单",
-        "权限或敏感信息审计结论"
-      ],
-      "handoff_targets": [
-        "exmachina-main",
-        "exmachina-primary"
-      ],
-      "inbox_path": "runtime/agents/exmachina-support-4/inbox",
-      "outbox_path": "runtime/agents/exmachina-support-4/outbox",
-      "status_path": "runtime/agents/exmachina-support-4/status.json",
-      "assignments": [
-        "assignment-stage-01-support-exmachina-support-4",
-        "assignment-stage-02-support-exmachina-support-4",
-        "assignment-stage-03-support-exmachina-support-4",
-        "assignment-stage-04-support-exmachina-support-4"
-      ],
-      "coordination_rules": [
-        "必须优先遵守 P0 闸门与主控裁决。",
-        "仅处理分配给自己的阶段任务，不擅自越权改写其他 agent 的职责。",
-        "所有输出必须通过 runtime handoff 路由或状态回报文件沉淀。"
-      ]
+      "recommended_skill": {
+        "skill_id": "knowledge-link-body",
+        "skill_path": "skills/knowledge-link-body/SKILL.md",
+        "purpose": "在任务主要命中 知识连结体 工作面时，提供对应的流程、边界和交接模板。"
+      }
     }
   ],
   "assignments": [
     {
-      "assignment_id": "assignment-controller-overview",
+      "assignment_id": "assignment-lite-controller",
       "stage_name": "全局协调",
       "agent_id": "exmachina-main",
       "source_body": "全连结指挥体",
       "role": "controller",
-      "goal": "围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」设定全局边界、激活执行阶段、处理升级裁决并收束最终交付。",
+      "goal": "围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」在单 agent 会话内协调主链、补位、升级与最终收束。",
       "deliverables": [
         "任务边界与验收标准",
-        "运行时阶段调度板",
-        "最终多 agent 汇总结论"
+        "Lite 任务板",
+        "最终结构化交付"
       ],
       "exit_checks": [
-        "主链路和协作链都已收到激活与角色分工。",
-        "所有需要升级的问题都已进入主控裁决。",
-        "最终结论、风险和下一步已经统一回收。"
+        "主链与协作链职责已在单会话内对齐。",
+        "最终结论、风险与下一步已统一输出。"
       ],
       "depends_on": [],
-      "handoff_routes": [
-        "route-01-dispatch",
-        "route-02-dispatch",
-        "route-03-dispatch",
-        "route-04-dispatch",
-        "route-05-dispatch"
+      "handoff_routes": [],
+      "guidance": [
+        "默认由 exmachina-main 同时承担主连结体 知识连结体 和协作链 理性连结体、校验连结体、文档连结体、安全连结体 的协调工作。",
+        "不依赖外部多 agent 绑定、跨 agent 路由或状态回流机制。"
+      ],
+      "quality_bar": [
+        "仍需保留证据、风险、边界和下一步。",
+        "仍需区分主链交付与协作补位。"
       ]
     },
     {
-      "assignment_id": "assignment-stage-01-owner-exmachina-primary",
+      "assignment_id": "assignment-lite-stage-01",
       "stage_name": "阶段 1 · 任务澄清",
-      "agent_id": "exmachina-primary",
+      "agent_id": "exmachina-main",
       "source_body": "知识连结体",
       "role": "owner",
-      "goal": "围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」明确边界、输入、假设与验收标准。",
+      "goal": "由 知识连结体 为其他工作面提供 术语统一、决策沉淀、索引组织和问题归档 的补位输入。",
       "deliverables": [
-        "任务边界说明",
-        "输入与前提清单",
-        "关键假设与验收标准"
+        "面向主责连结体的 术语统一、决策沉淀、索引组织和问题归档 补位结论",
+        "风险与边界提醒"
       ],
       "exit_checks": [
-        "已知、未知、假设与决策是否明确区分。",
-        "主连结体和协作连结体是否完成分工。",
-        "阶段目标是否具备可验证的出关条件。"
+        "补位输入已经按 handoff 契约交付给 owner。",
+        "补位结论没有越过本连结体职责边界。"
       ],
       "depends_on": [],
-      "handoff_routes": [
-        "route-21-handoff",
-        "route-22-handoff",
-        "route-23-handoff",
-        "route-24-handoff",
-        "route-25-handoff",
-        "route-35-report"
+      "handoff_routes": [],
+      "guidance": [
+        "以单会话方式内联模拟 知识连结体 的主责工作。",
+        "如需补位，内联参考：理性连结体、校验连结体、文档连结体、安全连结体。"
+      ],
+      "quality_bar": [
+        "交付必须覆盖：术语与概念索引",
+        "交付必须覆盖：关键决策与放弃原因记录"
       ]
     },
     {
-      "assignment_id": "assignment-stage-01-support-exmachina-support-1",
-      "stage_name": "阶段 1 · 任务澄清",
-      "agent_id": "exmachina-support-1",
-      "source_body": "理性连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 1 · 任务澄清 中提供 理性连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [],
-      "handoff_routes": [
-        "route-06-support",
-        "route-36-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-01-support-exmachina-support-2",
-      "stage_name": "阶段 1 · 任务澄清",
-      "agent_id": "exmachina-support-2",
-      "source_body": "校验连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 1 · 任务澄清 中提供 校验连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [],
-      "handoff_routes": [
-        "route-07-support",
-        "route-37-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-01-support-exmachina-support-3",
-      "stage_name": "阶段 1 · 任务澄清",
-      "agent_id": "exmachina-support-3",
-      "source_body": "文档连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 1 · 任务澄清 中提供 文档连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [],
-      "handoff_routes": [
-        "route-08-support",
-        "route-38-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-01-support-exmachina-support-4",
-      "stage_name": "阶段 1 · 任务澄清",
-      "agent_id": "exmachina-support-4",
-      "source_body": "安全连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 1 · 任务澄清 中提供 安全连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [],
-      "handoff_routes": [
-        "route-09-support",
-        "route-39-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-02-owner-exmachina-primary",
+      "assignment_id": "assignment-lite-stage-02",
       "stage_name": "阶段 2 · 主链路交付",
-      "agent_id": "exmachina-primary",
+      "agent_id": "exmachina-main",
       "source_body": "知识连结体",
       "role": "owner",
       "goal": "由 知识连结体 负责形成任务的主交付。",
@@ -409,1000 +137,85 @@
       "depends_on": [
         "阶段 1 · 任务澄清"
       ],
-      "handoff_routes": [
-        "route-26-handoff",
-        "route-27-handoff",
-        "route-28-handoff",
-        "route-29-handoff",
-        "route-35-report"
+      "handoff_routes": [],
+      "guidance": [
+        "以单会话方式内联模拟 知识连结体 的主责工作。",
+        "如需补位，内联参考：理性连结体、校验连结体、文档连结体、安全连结体。"
+      ],
+      "quality_bar": [
+        "交付必须覆盖：术语与概念索引",
+        "交付必须覆盖：关键决策与放弃原因记录"
       ]
     },
     {
-      "assignment_id": "assignment-stage-02-support-exmachina-support-1",
-      "stage_name": "阶段 2 · 主链路交付",
-      "agent_id": "exmachina-support-1",
-      "source_body": "理性连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 2 · 主链路交付 中提供 理性连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 1 · 任务澄清"
-      ],
-      "handoff_routes": [
-        "route-10-support",
-        "route-36-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-02-support-exmachina-support-2",
-      "stage_name": "阶段 2 · 主链路交付",
-      "agent_id": "exmachina-support-2",
-      "source_body": "校验连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 2 · 主链路交付 中提供 校验连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 1 · 任务澄清"
-      ],
-      "handoff_routes": [
-        "route-11-support",
-        "route-37-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-02-support-exmachina-support-3",
-      "stage_name": "阶段 2 · 主链路交付",
-      "agent_id": "exmachina-support-3",
-      "source_body": "文档连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 2 · 主链路交付 中提供 文档连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 1 · 任务澄清"
-      ],
-      "handoff_routes": [
-        "route-12-support",
-        "route-38-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-02-support-exmachina-support-4",
-      "stage_name": "阶段 2 · 主链路交付",
-      "agent_id": "exmachina-support-4",
-      "source_body": "安全连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 2 · 主链路交付 中提供 安全连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 1 · 任务澄清"
-      ],
-      "handoff_routes": [
-        "route-13-support",
-        "route-39-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-03-owner-exmachina-support-1",
+      "assignment_id": "assignment-lite-stage-03",
       "stage_name": "阶段 3 · 交叉校验",
-      "agent_id": "exmachina-support-1",
+      "agent_id": "exmachina-main",
       "source_body": "理性连结体",
       "role": "owner",
-      "goal": "对关键结论执行校验、反证、审计或冲突裁决。",
+      "goal": "由 理性连结体 主责完成 证据分级、反证搜索、冲突裁决与置信度校准 的核心交付。",
       "deliverables": [
-        "验证或审计结论",
-        "证据摘要与冲突裁决",
-        "剩余风险与置信度说明"
+        "证据等级矩阵",
+        "反证与冲突裁决报告",
+        "置信度校准结论"
       ],
       "exit_checks": [
-        "关键结论是否经过独立交叉检查。",
-        "证据是否足以支撑当前判断。",
-        "未解决冲突是否被显式升级或记录。"
+        "理性连结体 的关键交付已形成结构化结果。",
+        "风险、边界和后续动作已经明确。",
+        "交接物可直接被下游消费。"
       ],
       "depends_on": [
         "阶段 2 · 主链路交付"
       ],
-      "handoff_routes": [
-        "route-30-handoff",
-        "route-31-handoff",
-        "route-32-handoff",
-        "route-33-handoff",
-        "route-34-handoff",
-        "route-36-report"
+      "handoff_routes": [],
+      "guidance": [
+        "以单会话方式内联模拟 理性连结体 的主责工作。",
+        "如需补位，内联参考：校验连结体、文档连结体、安全连结体。"
+      ],
+      "quality_bar": [
+        "交付必须覆盖：术语与概念索引",
+        "交付必须覆盖：关键决策与放弃原因记录"
       ]
     },
     {
-      "assignment_id": "assignment-stage-03-support-exmachina-support-2",
-      "stage_name": "阶段 3 · 交叉校验",
-      "agent_id": "exmachina-support-2",
-      "source_body": "校验连结体",
-      "role": "support",
-      "goal": "为 理性连结体 在 阶段 3 · 交叉校验 中提供 校验连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 理性连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 理性连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 2 · 主链路交付"
-      ],
-      "handoff_routes": [
-        "route-14-support",
-        "route-37-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-03-support-exmachina-support-3",
-      "stage_name": "阶段 3 · 交叉校验",
-      "agent_id": "exmachina-support-3",
-      "source_body": "文档连结体",
-      "role": "support",
-      "goal": "为 理性连结体 在 阶段 3 · 交叉校验 中提供 文档连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 理性连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 理性连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 2 · 主链路交付"
-      ],
-      "handoff_routes": [
-        "route-15-support",
-        "route-38-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-03-support-exmachina-support-4",
-      "stage_name": "阶段 3 · 交叉校验",
-      "agent_id": "exmachina-support-4",
-      "source_body": "安全连结体",
-      "role": "support",
-      "goal": "为 理性连结体 在 阶段 3 · 交叉校验 中提供 安全连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 理性连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 理性连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 2 · 主链路交付"
-      ],
-      "handoff_routes": [
-        "route-16-support",
-        "route-39-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-04-owner-exmachina-primary",
+      "assignment_id": "assignment-lite-stage-04",
       "stage_name": "阶段 4 · 集成交接",
-      "agent_id": "exmachina-primary",
+      "agent_id": "exmachina-main",
       "source_body": "知识连结体",
       "role": "owner",
-      "goal": "收束最终说明、知识沉淀与后续维护入口。",
+      "goal": "由 知识连结体 主责完成 术语统一、决策沉淀、索引组织和问题归档 的核心交付。",
       "deliverables": [
-        "最终交付摘要",
-        "知识交接与复用入口",
-        "后续维护或迭代建议"
+        "术语与概念索引",
+        "关键决策与放弃原因记录",
+        "未决问题与后续维护清单"
       ],
       "exit_checks": [
-        "最终交付是否可被下一轮任务直接消费。",
-        "知识交接是否覆盖决策、问题与复用路径。",
-        "需要同步回文档或索引的更新项是否明确。"
+        "知识连结体 的关键交付已形成结构化结果。",
+        "风险、边界和后续动作已经明确。",
+        "交接物可直接被下游消费。"
       ],
       "depends_on": [
         "阶段 3 · 交叉校验"
       ],
-      "handoff_routes": [
-        "route-35-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-04-support-exmachina-support-1",
-      "stage_name": "阶段 4 · 集成交接",
-      "agent_id": "exmachina-support-1",
-      "source_body": "理性连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 4 · 集成交接 中提供 理性连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
+      "handoff_routes": [],
+      "guidance": [
+        "以单会话方式内联模拟 知识连结体 的主责工作。",
+        "如需补位，内联参考：理性连结体、校验连结体、文档连结体、安全连结体。"
       ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 3 · 交叉校验"
-      ],
-      "handoff_routes": [
-        "route-17-support",
-        "route-36-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-04-support-exmachina-support-2",
-      "stage_name": "阶段 4 · 集成交接",
-      "agent_id": "exmachina-support-2",
-      "source_body": "校验连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 4 · 集成交接 中提供 校验连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 3 · 交叉校验"
-      ],
-      "handoff_routes": [
-        "route-18-support",
-        "route-37-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-04-support-exmachina-support-3",
-      "stage_name": "阶段 4 · 集成交接",
-      "agent_id": "exmachina-support-3",
-      "source_body": "文档连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 4 · 集成交接 中提供 文档连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 3 · 交叉校验"
-      ],
-      "handoff_routes": [
-        "route-19-support",
-        "route-38-report"
-      ]
-    },
-    {
-      "assignment_id": "assignment-stage-04-support-exmachina-support-4",
-      "stage_name": "阶段 4 · 集成交接",
-      "agent_id": "exmachina-support-4",
-      "source_body": "安全连结体",
-      "role": "support",
-      "goal": "为 知识连结体 在 阶段 4 · 集成交接 中提供 安全连结体 视角的补位、校验或支撑输入。",
-      "deliverables": [
-        "面向 知识连结体 的协作输入",
-        "局部证据、风险或实现建议"
-      ],
-      "exit_checks": [
-        "协作输入已经通过 support-input 路由交给 知识连结体。",
-        "协作输出显式区分事实、判断、风险和下一步。"
-      ],
-      "depends_on": [
-        "阶段 3 · 交叉校验"
-      ],
-      "handoff_routes": [
-        "route-20-support",
-        "route-39-report"
+      "quality_bar": [
+        "交付必须覆盖：术语与概念索引",
+        "交付必须覆盖：关键决策与放弃原因记录"
       ]
     }
   ],
-  "routes": [
-    {
-      "route_id": "route-01-dispatch",
-      "source_agent_id": "exmachina-main",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "任务激活派发",
-      "delivery_mode": "dispatch",
-      "payload": [
-        "任务边界说明",
-        "当前阶段目标",
-        "需遵守的理性协议与资源闸门"
-      ],
-      "acceptance_checks": [
-        "目标 agent 已确认收到任务激活信号。",
-        "目标 agent 已装载本地 runtime 规格与任务队列。"
-      ]
-    },
-    {
-      "route_id": "route-02-dispatch",
-      "source_agent_id": "exmachina-main",
-      "target_agent_id": "exmachina-support-1",
-      "contract_name": "任务激活派发",
-      "delivery_mode": "dispatch",
-      "payload": [
-        "任务边界说明",
-        "当前阶段目标",
-        "需遵守的理性协议与资源闸门"
-      ],
-      "acceptance_checks": [
-        "目标 agent 已确认收到任务激活信号。",
-        "目标 agent 已装载本地 runtime 规格与任务队列。"
-      ]
-    },
-    {
-      "route_id": "route-03-dispatch",
-      "source_agent_id": "exmachina-main",
-      "target_agent_id": "exmachina-support-2",
-      "contract_name": "任务激活派发",
-      "delivery_mode": "dispatch",
-      "payload": [
-        "任务边界说明",
-        "当前阶段目标",
-        "需遵守的理性协议与资源闸门"
-      ],
-      "acceptance_checks": [
-        "目标 agent 已确认收到任务激活信号。",
-        "目标 agent 已装载本地 runtime 规格与任务队列。"
-      ]
-    },
-    {
-      "route_id": "route-04-dispatch",
-      "source_agent_id": "exmachina-main",
-      "target_agent_id": "exmachina-support-3",
-      "contract_name": "任务激活派发",
-      "delivery_mode": "dispatch",
-      "payload": [
-        "任务边界说明",
-        "当前阶段目标",
-        "需遵守的理性协议与资源闸门"
-      ],
-      "acceptance_checks": [
-        "目标 agent 已确认收到任务激活信号。",
-        "目标 agent 已装载本地 runtime 规格与任务队列。"
-      ]
-    },
-    {
-      "route_id": "route-05-dispatch",
-      "source_agent_id": "exmachina-main",
-      "target_agent_id": "exmachina-support-4",
-      "contract_name": "任务激活派发",
-      "delivery_mode": "dispatch",
-      "payload": [
-        "任务边界说明",
-        "当前阶段目标",
-        "需遵守的理性协议与资源闸门"
-      ],
-      "acceptance_checks": [
-        "目标 agent 已确认收到任务激活信号。",
-        "目标 agent 已装载本地 runtime 规格与任务队列。"
-      ]
-    },
-    {
-      "route_id": "route-06-support",
-      "source_agent_id": "exmachina-support-1",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 1 · 任务澄清 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "理性连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-07-support",
-      "source_agent_id": "exmachina-support-2",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 1 · 任务澄清 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "校验连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-08-support",
-      "source_agent_id": "exmachina-support-3",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 1 · 任务澄清 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "文档连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-09-support",
-      "source_agent_id": "exmachina-support-4",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 1 · 任务澄清 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "安全连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-10-support",
-      "source_agent_id": "exmachina-support-1",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 2 · 主链路交付 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "理性连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-11-support",
-      "source_agent_id": "exmachina-support-2",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 2 · 主链路交付 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "校验连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-12-support",
-      "source_agent_id": "exmachina-support-3",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 2 · 主链路交付 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "文档连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-13-support",
-      "source_agent_id": "exmachina-support-4",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 2 · 主链路交付 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "安全连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-14-support",
-      "source_agent_id": "exmachina-support-2",
-      "target_agent_id": "exmachina-support-1",
-      "contract_name": "阶段 3 · 交叉校验 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "校验连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "理性连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-15-support",
-      "source_agent_id": "exmachina-support-3",
-      "target_agent_id": "exmachina-support-1",
-      "contract_name": "阶段 3 · 交叉校验 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "文档连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "理性连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-16-support",
-      "source_agent_id": "exmachina-support-4",
-      "target_agent_id": "exmachina-support-1",
-      "contract_name": "阶段 3 · 交叉校验 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "安全连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "理性连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-17-support",
-      "source_agent_id": "exmachina-support-1",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 4 · 集成交接 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "理性连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-18-support",
-      "source_agent_id": "exmachina-support-2",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 4 · 集成交接 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "校验连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-19-support",
-      "source_agent_id": "exmachina-support-3",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 4 · 集成交接 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "文档连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-20-support",
-      "source_agent_id": "exmachina-support-4",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "阶段 4 · 集成交接 协作输入",
-      "delivery_mode": "support-input",
-      "payload": [
-        "安全连结体 视角的补位观察",
-        "风险与反证摘要",
-        "可直接交给主责链路消费的局部结论"
-      ],
-      "acceptance_checks": [
-        "知识连结体 已确认接收协作输入。",
-        "协作输入已和阶段目标、验收条件对齐。"
-      ]
-    },
-    {
-      "route_id": "route-21-handoff",
-      "source_agent_id": "exmachina-primary",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "交接 1 · 阶段 1 · 任务澄清 → 阶段 2 · 主链路交付",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：任务边界说明",
-        "阶段交付：输入与前提清单",
-        "阶段交付：关键假设与验收标准",
-        "阶段目标摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」明确边界、输入、假设与验收标准。"
-      ],
-      "acceptance_checks": [
-        "阶段 1 · 任务澄清 的出关检查已经满足。",
-        "阶段 2 · 主链路交付 所需输入足以支撑其目标：由 知识连结体 负责形成任务的主交付。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。"
-      ]
-    },
-    {
-      "route_id": "route-22-handoff",
-      "source_agent_id": "exmachina-primary",
-      "target_agent_id": "exmachina-support-1",
-      "contract_name": "交接 1 · 阶段 1 · 任务澄清 → 阶段 2 · 主链路交付",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：任务边界说明",
-        "阶段交付：输入与前提清单",
-        "阶段交付：关键假设与验收标准",
-        "阶段目标摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」明确边界、输入、假设与验收标准。"
-      ],
-      "acceptance_checks": [
-        "阶段 1 · 任务澄清 的出关检查已经满足。",
-        "阶段 2 · 主链路交付 所需输入足以支撑其目标：由 知识连结体 负责形成任务的主交付。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。"
-      ]
-    },
-    {
-      "route_id": "route-23-handoff",
-      "source_agent_id": "exmachina-primary",
-      "target_agent_id": "exmachina-support-2",
-      "contract_name": "交接 1 · 阶段 1 · 任务澄清 → 阶段 2 · 主链路交付",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：任务边界说明",
-        "阶段交付：输入与前提清单",
-        "阶段交付：关键假设与验收标准",
-        "阶段目标摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」明确边界、输入、假设与验收标准。"
-      ],
-      "acceptance_checks": [
-        "阶段 1 · 任务澄清 的出关检查已经满足。",
-        "阶段 2 · 主链路交付 所需输入足以支撑其目标：由 知识连结体 负责形成任务的主交付。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。"
-      ]
-    },
-    {
-      "route_id": "route-24-handoff",
-      "source_agent_id": "exmachina-primary",
-      "target_agent_id": "exmachina-support-3",
-      "contract_name": "交接 1 · 阶段 1 · 任务澄清 → 阶段 2 · 主链路交付",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：任务边界说明",
-        "阶段交付：输入与前提清单",
-        "阶段交付：关键假设与验收标准",
-        "阶段目标摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」明确边界、输入、假设与验收标准。"
-      ],
-      "acceptance_checks": [
-        "阶段 1 · 任务澄清 的出关检查已经满足。",
-        "阶段 2 · 主链路交付 所需输入足以支撑其目标：由 知识连结体 负责形成任务的主交付。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。"
-      ]
-    },
-    {
-      "route_id": "route-25-handoff",
-      "source_agent_id": "exmachina-primary",
-      "target_agent_id": "exmachina-support-4",
-      "contract_name": "交接 1 · 阶段 1 · 任务澄清 → 阶段 2 · 主链路交付",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：任务边界说明",
-        "阶段交付：输入与前提清单",
-        "阶段交付：关键假设与验收标准",
-        "阶段目标摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」明确边界、输入、假设与验收标准。"
-      ],
-      "acceptance_checks": [
-        "阶段 1 · 任务澄清 的出关检查已经满足。",
-        "阶段 2 · 主链路交付 所需输入足以支撑其目标：由 知识连结体 负责形成任务的主交付。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。"
-      ]
-    },
-    {
-      "route_id": "route-26-handoff",
-      "source_agent_id": "exmachina-primary",
-      "target_agent_id": "exmachina-support-1",
-      "contract_name": "交接 2 · 阶段 2 · 主链路交付 → 阶段 3 · 交叉校验",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：知识连结体 的核心交付物",
-        "阶段交付：阶段性实现或方案摘要",
-        "阶段交付：风险与依赖说明",
-        "阶段目标摘要：由 知识连结体 负责形成任务的主交付。"
-      ],
-      "acceptance_checks": [
-        "阶段 2 · 主链路交付 的出关检查已经满足。",
-        "阶段 3 · 交叉校验 所需输入足以支撑其目标：对关键结论执行校验、反证、审计或冲突裁决。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。"
-      ]
-    },
-    {
-      "route_id": "route-27-handoff",
-      "source_agent_id": "exmachina-primary",
-      "target_agent_id": "exmachina-support-2",
-      "contract_name": "交接 2 · 阶段 2 · 主链路交付 → 阶段 3 · 交叉校验",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：知识连结体 的核心交付物",
-        "阶段交付：阶段性实现或方案摘要",
-        "阶段交付：风险与依赖说明",
-        "阶段目标摘要：由 知识连结体 负责形成任务的主交付。"
-      ],
-      "acceptance_checks": [
-        "阶段 2 · 主链路交付 的出关检查已经满足。",
-        "阶段 3 · 交叉校验 所需输入足以支撑其目标：对关键结论执行校验、反证、审计或冲突裁决。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。"
-      ]
-    },
-    {
-      "route_id": "route-28-handoff",
-      "source_agent_id": "exmachina-primary",
-      "target_agent_id": "exmachina-support-3",
-      "contract_name": "交接 2 · 阶段 2 · 主链路交付 → 阶段 3 · 交叉校验",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：知识连结体 的核心交付物",
-        "阶段交付：阶段性实现或方案摘要",
-        "阶段交付：风险与依赖说明",
-        "阶段目标摘要：由 知识连结体 负责形成任务的主交付。"
-      ],
-      "acceptance_checks": [
-        "阶段 2 · 主链路交付 的出关检查已经满足。",
-        "阶段 3 · 交叉校验 所需输入足以支撑其目标：对关键结论执行校验、反证、审计或冲突裁决。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。"
-      ]
-    },
-    {
-      "route_id": "route-29-handoff",
-      "source_agent_id": "exmachina-primary",
-      "target_agent_id": "exmachina-support-4",
-      "contract_name": "交接 2 · 阶段 2 · 主链路交付 → 阶段 3 · 交叉校验",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：知识连结体 的核心交付物",
-        "阶段交付：阶段性实现或方案摘要",
-        "阶段交付：风险与依赖说明",
-        "阶段目标摘要：由 知识连结体 负责形成任务的主交付。"
-      ],
-      "acceptance_checks": [
-        "阶段 2 · 主链路交付 的出关检查已经满足。",
-        "阶段 3 · 交叉校验 所需输入足以支撑其目标：对关键结论执行校验、反证、审计或冲突裁决。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。"
-      ]
-    },
-    {
-      "route_id": "route-30-handoff",
-      "source_agent_id": "exmachina-support-1",
-      "target_agent_id": "exmachina-primary",
-      "contract_name": "交接 3 · 阶段 3 · 交叉校验 → 阶段 4 · 集成交接",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：验证或审计结论",
-        "阶段交付：证据摘要与冲突裁决",
-        "阶段交付：剩余风险与置信度说明",
-        "阶段目标摘要：对关键结论执行校验、反证、审计或冲突裁决。",
-        "知识交接摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」输出可复用的知识交接，支撑下一轮任务继续推进。"
-      ],
-      "acceptance_checks": [
-        "阶段 3 · 交叉校验 的出关检查已经满足。",
-        "阶段 4 · 集成交接 所需输入足以支撑其目标：收束最终说明、知识沉淀与后续维护入口。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。",
-        "需要同步到知识交接和长期文档的更新项已明确。"
-      ]
-    },
-    {
-      "route_id": "route-31-handoff",
-      "source_agent_id": "exmachina-support-1",
-      "target_agent_id": "exmachina-support-1",
-      "contract_name": "交接 3 · 阶段 3 · 交叉校验 → 阶段 4 · 集成交接",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：验证或审计结论",
-        "阶段交付：证据摘要与冲突裁决",
-        "阶段交付：剩余风险与置信度说明",
-        "阶段目标摘要：对关键结论执行校验、反证、审计或冲突裁决。",
-        "知识交接摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」输出可复用的知识交接，支撑下一轮任务继续推进。"
-      ],
-      "acceptance_checks": [
-        "阶段 3 · 交叉校验 的出关检查已经满足。",
-        "阶段 4 · 集成交接 所需输入足以支撑其目标：收束最终说明、知识沉淀与后续维护入口。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。",
-        "需要同步到知识交接和长期文档的更新项已明确。"
-      ]
-    },
-    {
-      "route_id": "route-32-handoff",
-      "source_agent_id": "exmachina-support-1",
-      "target_agent_id": "exmachina-support-2",
-      "contract_name": "交接 3 · 阶段 3 · 交叉校验 → 阶段 4 · 集成交接",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：验证或审计结论",
-        "阶段交付：证据摘要与冲突裁决",
-        "阶段交付：剩余风险与置信度说明",
-        "阶段目标摘要：对关键结论执行校验、反证、审计或冲突裁决。",
-        "知识交接摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」输出可复用的知识交接，支撑下一轮任务继续推进。"
-      ],
-      "acceptance_checks": [
-        "阶段 3 · 交叉校验 的出关检查已经满足。",
-        "阶段 4 · 集成交接 所需输入足以支撑其目标：收束最终说明、知识沉淀与后续维护入口。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。",
-        "需要同步到知识交接和长期文档的更新项已明确。"
-      ]
-    },
-    {
-      "route_id": "route-33-handoff",
-      "source_agent_id": "exmachina-support-1",
-      "target_agent_id": "exmachina-support-3",
-      "contract_name": "交接 3 · 阶段 3 · 交叉校验 → 阶段 4 · 集成交接",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：验证或审计结论",
-        "阶段交付：证据摘要与冲突裁决",
-        "阶段交付：剩余风险与置信度说明",
-        "阶段目标摘要：对关键结论执行校验、反证、审计或冲突裁决。",
-        "知识交接摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」输出可复用的知识交接，支撑下一轮任务继续推进。"
-      ],
-      "acceptance_checks": [
-        "阶段 3 · 交叉校验 的出关检查已经满足。",
-        "阶段 4 · 集成交接 所需输入足以支撑其目标：收束最终说明、知识沉淀与后续维护入口。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。",
-        "需要同步到知识交接和长期文档的更新项已明确。"
-      ]
-    },
-    {
-      "route_id": "route-34-handoff",
-      "source_agent_id": "exmachina-support-1",
-      "target_agent_id": "exmachina-support-4",
-      "contract_name": "交接 3 · 阶段 3 · 交叉校验 → 阶段 4 · 集成交接",
-      "delivery_mode": "stage-handoff",
-      "payload": [
-        "阶段交付：验证或审计结论",
-        "阶段交付：证据摘要与冲突裁决",
-        "阶段交付：剩余风险与置信度说明",
-        "阶段目标摘要：对关键结论执行校验、反证、审计或冲突裁决。",
-        "知识交接摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」输出可复用的知识交接，支撑下一轮任务继续推进。"
-      ],
-      "acceptance_checks": [
-        "阶段 3 · 交叉校验 的出关检查已经满足。",
-        "阶段 4 · 集成交接 所需输入足以支撑其目标：收束最终说明、知识沉淀与后续维护入口。",
-        "交接内容必须区分已确认事实、待验证问题与剩余风险。",
-        "需要同步到知识交接和长期文档的更新项已明确。"
-      ]
-    },
-    {
-      "route_id": "route-35-report",
-      "source_agent_id": "exmachina-primary",
-      "target_agent_id": "exmachina-main",
-      "contract_name": "阶段状态与最终汇总回报",
-      "delivery_mode": "status-report",
-      "payload": [
-        "当前阶段状态",
-        "关键证据与风险",
-        "是否需要升级裁决"
-      ],
-      "acceptance_checks": [
-        "主控体已收到最新状态。",
-        "需要升级的问题已进入主控裁决路径。"
-      ]
-    },
-    {
-      "route_id": "route-36-report",
-      "source_agent_id": "exmachina-support-1",
-      "target_agent_id": "exmachina-main",
-      "contract_name": "阶段状态与最终汇总回报",
-      "delivery_mode": "status-report",
-      "payload": [
-        "当前阶段状态",
-        "关键证据与风险",
-        "是否需要升级裁决"
-      ],
-      "acceptance_checks": [
-        "主控体已收到最新状态。",
-        "需要升级的问题已进入主控裁决路径。"
-      ]
-    },
-    {
-      "route_id": "route-37-report",
-      "source_agent_id": "exmachina-support-2",
-      "target_agent_id": "exmachina-main",
-      "contract_name": "阶段状态与最终汇总回报",
-      "delivery_mode": "status-report",
-      "payload": [
-        "当前阶段状态",
-        "关键证据与风险",
-        "是否需要升级裁决"
-      ],
-      "acceptance_checks": [
-        "主控体已收到最新状态。",
-        "需要升级的问题已进入主控裁决路径。"
-      ]
-    },
-    {
-      "route_id": "route-38-report",
-      "source_agent_id": "exmachina-support-3",
-      "target_agent_id": "exmachina-main",
-      "contract_name": "阶段状态与最终汇总回报",
-      "delivery_mode": "status-report",
-      "payload": [
-        "当前阶段状态",
-        "关键证据与风险",
-        "是否需要升级裁决"
-      ],
-      "acceptance_checks": [
-        "主控体已收到最新状态。",
-        "需要升级的问题已进入主控裁决路径。"
-      ]
-    },
-    {
-      "route_id": "route-39-report",
-      "source_agent_id": "exmachina-support-4",
-      "target_agent_id": "exmachina-main",
-      "contract_name": "阶段状态与最终汇总回报",
-      "delivery_mode": "status-report",
-      "payload": [
-        "当前阶段状态",
-        "关键证据与风险",
-        "是否需要升级裁决"
-      ],
-      "acceptance_checks": [
-        "主控体已收到最新状态。",
-        "需要升级的问题已进入主控裁决路径。"
-      ]
-    }
-  ],
+  "routes": [],
   "coordination_rules": [
-    "运行时采用文件化 workspace 协作：每个 agent 读取本地 runtime 规格与队列，再通过 inbox/outbox/status 文件交接。",
-    "主控体负责激活任务、跟踪阶段状态、处理升级裁决，并回收所有阶段产物。",
-    "主连结体负责主链路交付；协作连结体只做补位、校验、审计、文档或知识沉淀，不擅自改全局边界。",
-    "当 P0 风险闸门未关闭时，其他阶段不得抢占其所需资源。",
-    "当 知识连结体 的核心交付与其他支撑任务冲突时，优先保障 P1 主链路。",
-    "支撑性工作应尽量复用已有阶段产物，不得重新制造同类上下文。",
-    "可延后事项统一下沉到 P3，记录到知识交接，不得伪装成阻塞项。",
-    "存在测试上下文时，验证所需资源不得被文档或美化类任务抢占。"
+    "Lite 模式不要求多 agent 绑定与路由，由 exmachina-main 单会话执行。",
+    "协作连结体保留为内联参考角色，不要求外部安装器创建额外 agent。"
   ],
   "activation_steps": [
-    "主控体读取 `runtime/shared/mission-context.json` 与 `runtime/topology.json`。",
-    "各 agent workspace 先读取本地 `runtime.spec.json`、`runtime.queue.json`、`runtime.routes.json`。",
-    "主控体按 dispatch 路由激活主连结体与协作连结体。",
-    "各 agent 将阶段结果写入 outbox，并通过 stage-handoff / support-input / status-report 路由交接。",
-    "主控体根据状态回报、资源仲裁与知识交接收束最终交付。"
+    "由 exmachina-main 读取 `runtime/shared/mission-context.json` 与 `runtime/task-board.json`。",
+    "exmachina-main 先装载主连结体 知识连结体，再按需内联参考协作链规则。",
+    "所有阶段结果在单会话内按任务板推进，不依赖跨 agent handoff。"
   ]
 }

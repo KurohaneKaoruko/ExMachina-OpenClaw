@@ -6,8 +6,8 @@
 2. 运行 `python -m exmachina validate-assets`
 3. 读取 `openclaw-pack/install/INSTALL.md`
 4. 读取 `openclaw-pack/install/openclaw.agents.plan.json`
-5. 先装配 `exmachina-main`，再装配 `exmachina-primary` 和协作 agent
-6. 完成后回到 `openclaw-pack/BOOTSTRAP.md`，按多智能体结构执行任务
+5. 默认按 Lite 路径装配 `exmachina-main` 单 agent 入口
+6. 如果宿主明确支持完整多 agent 绑定与路由，再切换到 Full 安装计划
+7. 完成后回到 `openclaw-pack/BOOTSTRAP.md`，按当前模式执行任务
 
-如果当前环境还没有多 agent 配置能力，至少要先把本仓库作为主控 workspace 运行，再根据安装计划逐步补齐协作 agent。
-
+如果当前环境还没有多 agent 配置能力，直接使用 Lite 默认路径，不要求补齐协作 agent。

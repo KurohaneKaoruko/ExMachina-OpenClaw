@@ -248,5 +248,93 @@
       "body_file": "link_bodies/20_理性连结体.json"
     }
   },
-  "conductor_file": "conductors/00_全连结指挥体.json"
+  "conductor_file": "conductors/00_全连结指挥体.json",
+  "content_policy": {
+    "primary_language": "zh-CN",
+    "secondary_language": "en",
+    "style": "structured-role-prompts",
+    "allow_inspiration_reference_in_readme_only": true
+  },
+  "asset_defaults": {
+    "child_output_contract": [
+      "背景事实",
+      "关键观察或证据",
+      "当前结论或产出",
+      "风险与边界",
+      "建议交接对象"
+    ],
+    "conductor_reporting_contract": [
+      "当前阶段状态",
+      "关键证据或阻塞",
+      "是否需要升级",
+      "下一步行动建议"
+    ],
+    "body_exit_contract": [
+      "交付物可被下游直接消费",
+      "风险、未知和边界已明确",
+      "后续交接对象和下一步已明确"
+    ]
+  },
+  "validation_policy": {
+    "strict_mode": true,
+    "require_bilingual_summary": true,
+    "require_skill_binding": true
+  },
+  "skill_catalog": {
+    "策划连结体": {
+      "skill_id": "planning-link-body",
+      "skill_path": "skills/planning-link-body/SKILL.md",
+      "display_name": "Planning Link Body"
+    },
+    "研究连结体": {
+      "skill_id": "research-link-body",
+      "skill_path": "skills/research-link-body/SKILL.md",
+      "display_name": "Research Link Body"
+    },
+    "架构连结体": {
+      "skill_id": "architecture-link-body",
+      "skill_path": "skills/architecture-link-body/SKILL.md",
+      "display_name": "Architecture Link Body"
+    },
+    "实作连结体": {
+      "skill_id": "implementation-link-body",
+      "skill_path": "skills/implementation-link-body/SKILL.md",
+      "display_name": "Implementation Link Body"
+    },
+    "校验连结体": {
+      "skill_id": "validation-link-body",
+      "skill_path": "skills/validation-link-body/SKILL.md",
+      "display_name": "Validation Link Body"
+    },
+    "集成连结体": {
+      "skill_id": "integration-link-body",
+      "skill_path": "skills/integration-link-body/SKILL.md",
+      "display_name": "Integration Link Body"
+    },
+    "文档连结体": {
+      "skill_id": "documentation-link-body",
+      "skill_path": "skills/documentation-link-body/SKILL.md",
+      "display_name": "Documentation Link Body"
+    },
+    "运维连结体": {
+      "skill_id": "operations-link-body",
+      "skill_path": "skills/operations-link-body/SKILL.md",
+      "display_name": "Operations Link Body"
+    },
+    "安全连结体": {
+      "skill_id": "security-link-body",
+      "skill_path": "skills/security-link-body/SKILL.md",
+      "display_name": "Security Link Body"
+    },
+    "知识连结体": {
+      "skill_id": "knowledge-link-body",
+      "skill_path": "skills/knowledge-link-body/SKILL.md",
+      "display_name": "Knowledge Link Body"
+    },
+    "理性连结体": {
+      "skill_id": "rationality-link-body",
+      "skill_path": "skills/rationality-link-body/SKILL.md",
+      "display_name": "Rationality Link Body"
+    }
+  }
 }

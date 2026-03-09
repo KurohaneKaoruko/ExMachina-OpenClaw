@@ -22,6 +22,12 @@ def build_parser() -> argparse.ArgumentParser:
         subparser.add_argument("--workspace", help="本地工作区目录，用于生成定制化编排。")
         subparser.add_argument("--title", help="自定义任务标题。")
         subparser.add_argument("--profile", help="自定义 JSON 体系配置路径。")
+        subparser.add_argument(
+            "--mode",
+            choices=("lite", "full"),
+            default="lite",
+            help="导出模式：lite 为默认单 agent 兼容模式，full 为完整多 agent 模式。",
+        )
         subparser.add_argument("--out", required=True, help="输出目录。")
 
     validate_parser = subparsers.add_parser("validate-assets")
@@ -53,6 +59,7 @@ def main(argv: list[str] | None = None) -> int:
         workspace_path=args.workspace,
         title=args.title,
         profile_path=args.profile,
+        mode=args.mode,
     )
 
     out_path = Path(args.out)

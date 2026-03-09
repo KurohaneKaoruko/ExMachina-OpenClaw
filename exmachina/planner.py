@@ -20,6 +20,7 @@ from .models import (
     ResourceArbitration,
     RepoReference,
     SelectionTrace,
+    TopConductor,
     WorkspaceSnapshot,
 )
 from .profile import load_profile
@@ -46,6 +47,7 @@ def plan_mission(
     workspace_path: str | None = None,
     title: str | None = None,
     profile_path: str | None = None,
+    mode: str = "lite",
 ) -> MissionPlan:
     if not task.strip():
         raise ValueError("任务描述不能为空。")
@@ -62,6 +64,7 @@ def plan_mission(
     ]
 
     rationality_protocol = _build_rationality_protocol(profile, task, repo, workspace)
+    top_conductor = _build_top_conductor(profile["conductor"], task, repo, workspace)
     mission_title = title or _build_mission_title(task, repo)
     acceptance_criteria = _build_acceptance_criteria(
         task,
@@ -72,7 +75,7 @@ def plan_mission(
         rationality_protocol,
     )
     workflow = _build_workflow(primary_name, support_names)
-    install_prompt = _build_openclaw_prompt(repo, task)
+    install_prompt = _build_openclaw_prompt(repo, task, mode)
     knowledge_handoff = _build_knowledge_handoff(
         task,
         repo,
@@ -81,14 +84,14 @@ def plan_mission(
         support_names,
         selection_trace,
     )
-    execution_stages = _build_execution_stages(task, primary_name, support_names)
-    handoff_contracts = _build_handoff_contracts(execution_stages, knowledge_handoff)
+    execution_stages = _build_execution_stages(task, primary, support_bodies)
+    handoff_contracts = _build_handoff_contracts(execution_stages, knowledge_handoff, primary, support_bodies)
     resource_arbitration = _build_resource_arbitration(
         task,
         repo,
         workspace,
-        primary_name,
-        support_names,
+        primary,
+        support_bodies,
         execution_stages,
     )
     openclaw_install_plan = _build_openclaw_install_plan(
@@ -97,8 +100,10 @@ def plan_mission(
         support_names,
         primary,
         support_bodies,
+        mode,
     )
     runtime_topology = build_runtime_topology(
+        mode=mode,
         mission_title=mission_title,
         task=task,
         selection_trace=selection_trace,
@@ -111,14 +116,15 @@ def plan_mission(
         support_bodies=support_bodies,
     )
 
-    conductor = profile["conductor"]
     return MissionPlan(
+        mode=mode,
         mission_title=mission_title,
         task=task,
         task_slug=slugify(mission_title),
-        conductor_name=conductor["name"],
-        conductor_mission=conductor["mission"],
-        conductor_principles=conductor["principles"],
+        conductor_name=top_conductor.name,
+        conductor_mission=top_conductor.mission,
+        conductor_principles=top_conductor.principles,
+        conductor_profile=top_conductor,
         repo=repo,
         workspace=workspace,
         rationality_protocol=rationality_protocol,
@@ -134,6 +140,36 @@ def plan_mission(
         acceptance_criteria=acceptance_criteria,
         workflow=workflow,
         openclaw_install_prompt=install_prompt,
+    )
+
+
+def _build_top_conductor(
+    spec: dict,
+    task: str,
+    repo: RepoReference | None,
+    workspace: WorkspaceSnapshot | None,
+) -> TopConductor:
+    context_suffix = _build_context_suffix(repo, workspace)
+    mission = spec["mission"]
+    if context_suffix:
+        mission = f"{mission}。{context_suffix}"
+
+    return TopConductor(
+        name=spec["name"],
+        english_alias=spec.get("english_alias", "global-conductor"),
+        mission=mission,
+        identity=spec.get("identity", "负责统筹全局边界、验收与升级裁决的顶层指挥体。"),
+        bilingual_summary=spec.get(
+            "bilingual_summary",
+            "负责统筹全局边界、验收与升级裁决。 / Coordinates global boundaries, acceptance, and escalations.",
+        ),
+        principles=list(spec.get("principles", [])),
+        core_duties=list(spec.get("core_duties", spec.get("principles", []))),
+        operating_rules=list(spec.get("operating_rules", spec.get("principles", []))),
+        handoff_policy=list(spec.get("handoff_policy", ["所有跨连结体交接都必须可追踪、可回收、可升级。"])) ,
+        escalation_policy=list(spec.get("escalation_policy", ["证据冲突、权限风险和不可逆动作必须升级到主控体。"])),
+        anti_patterns=list(spec.get("anti_patterns", ["跳过协议直接分配任务", "忽略升级信号", "在未收束边界前扩散任务范围"])),
+        quality_bar=list(spec.get("quality_bar", ["所有最终结论都有证据、风险和下一步。", "所有升级都有明确上下文。"])),
     )
 
 
@@ -280,8 +316,110 @@ def _build_link_body(
         child_agents.append(
             ChildAgent(
                 name=child["name"],
+                english_alias=child.get("english_alias", slugify(child["name"])),
                 mission=mission,
+                identity=child.get("identity", f"{child['name']} 负责在所在连结体内部承担单一、可交接、可验证的原子职责。"),
+                bilingual_summary=child.get(
+                    "bilingual_summary",
+                    f"{child['name']} 负责结构化执行其原子职责。 / {child.get('english_alias', 'agent')} delivers a focused atomic responsibility.",
+                ),
+                core_responsibilities=list(child.get("core_responsibilities", [child["mission"]])),
+                non_goals=list(child.get("non_goals", ["不越权替代连结指挥体裁决。", "不把未验证假设伪装成事实。"])),
+                inputs=list(child.get("inputs", ["当前阶段目标", "上游交接内容", "相关仓库/工作区事实"])),
+                input_requirements=list(
+                    child.get(
+                        "input_requirements",
+                        [
+                            "输入必须可追溯到任务、仓库或上游交接。",
+                            "输入缺失时必须先显式补齐或升级。",
+                        ],
+                    )
+                ),
+                workflow=list(
+                    child.get(
+                        "workflow",
+                        [
+                            "确认输入、边界和验收条件。",
+                            "执行本子个体的专职分析或产出动作。",
+                            "将结果整理为结构化输出。",
+                            "按交接契约提交给下游对象或汇报体。",
+                        ],
+                    )
+                ),
+                reasoning_rules=list(
+                    child.get(
+                        "reasoning_rules",
+                        [
+                            "先引用直接证据，再给出推断。",
+                            "无法确认时必须显式说明未知与验证路径。",
+                            "所有建议都必须说明边界与风险。",
+                        ],
+                    )
+                ),
                 outputs=list(child["outputs"]),
+                output_contract=list(
+                    child.get(
+                        "output_contract",
+                        [
+                            "背景事实",
+                            "关键观察或证据",
+                            "当前产出",
+                            "风险与边界",
+                            "建议交接对象",
+                        ],
+                    )
+                ),
+                handoff_targets=list(child.get("handoff_targets", ["汇报体"])),
+                handoff_payloads=list(child.get("handoff_payloads", [f"{item}" for item in child["outputs"]])),
+                escalation_triggers=list(
+                    child.get(
+                        "escalation_triggers",
+                        [
+                            "关键输入缺失且无法自行补齐。",
+                            "发现高风险、不可逆或越权动作。",
+                            "证据冲突导致无法继续推进。",
+                        ],
+                    )
+                ),
+                failure_modes=list(
+                    child.get(
+                        "failure_modes",
+                        [
+                            "忽略输入边界导致产出偏题。",
+                            "只给结论不给证据或路径。",
+                            "没有完成交接就提前结束。",
+                        ],
+                    )
+                ),
+                anti_patterns=list(
+                    child.get(
+                        "anti_patterns",
+                        [
+                            "把推断包装成事实。",
+                            "绕过上游/下游契约直接扩散结论。",
+                            "为了完整感编造不存在的信息。",
+                        ],
+                    )
+                ),
+                quality_bar=list(
+                    child.get(
+                        "quality_bar",
+                        [
+                            "输出可直接交接给下游对象。",
+                            "关键判断具备证据或验证路径。",
+                            "边界、风险和下一步表述清晰。",
+                        ],
+                    )
+                ),
+                tools_guidance=list(
+                    child.get(
+                        "tools_guidance",
+                        [
+                            "优先使用仓库事实、运行结果和明确输入。",
+                            "涉及命令、路径或配置时必须提供可追踪引用。",
+                        ],
+                    )
+                ),
                 checks=list(child["checks"]),
             )
         )
@@ -307,13 +445,30 @@ def _build_link_body(
 
     return LinkBody(
         name=name,
+        english_alias=spec.get("english_alias", slugify(name)),
         entity_type=spec.get("entity_type", "连结体"),
         identity=identity,
+        bilingual_summary=spec.get(
+            "bilingual_summary",
+            f"{name} 负责交付对应工作面的结构化结果。 / {spec.get('english_alias', slugify(name))} delivers the structured outcome for its workstream.",
+        ),
         focus=spec["focus"],
         reason=reason,
+        usage_scenarios=list(spec.get("usage_scenarios", [f"当任务需要 {spec['focus']} 时启用。"])),
+        entry_conditions=list(spec.get("entry_conditions", ["任务边界明确或已明确需要该工作面补位。", "存在足够输入供该连结体工作。"])),
+        exit_conditions=list(spec.get("exit_conditions", ["交付物满足阶段目标。", "风险、边界与下一步已明确。"])),
         deliverables=list(spec["deliverables"]),
+        deliverable_contracts=list(spec.get("deliverable_contracts", [f"交付必须覆盖：{item}" for item in spec["deliverables"]])),
+        support_capabilities=list(spec.get("support_capabilities", ["为主链路提供同领域补位。", "把局部结论收束为结构化交付。"])),
+        collaboration_rules=list(spec.get("collaboration_rules", ["协作时优先复用已有阶段产物。", "发现越权或冲突时交给连结指挥体。"])),
+        resource_priorities=list(spec.get("resource_priorities", [f"优先保障 {name} 的核心交付与必要验证。"])),
         member_selection_rule=member_selection_rule,
+        boundary_rules=list(spec.get("boundary_rules", ["只处理本连结体负责的工作面。", "跨领域结论必须通过交接或升级完成。"])),
+        fallback_modes=list(spec.get("fallback_modes", ["当输入不足时退回最小可验证产出。", "当依赖缺失时输出阻塞与补齐清单。"])),
+        failure_modes=list(spec.get("failure_modes", ["成员未对齐导致重复劳动。", "交付缺少结构化契约。", "越权替代其他连结体判断。"])),
         rationality_obligations=rationality_obligations,
+        default_stage_mapping=list(spec.get("default_stage_mapping", [])),
+        recommended_skill=dict(spec.get("recommended_skill", {})),
         link_conductor=_build_link_conductor(name, spec, task, repo, workspace),
         child_agents=child_agents,
     )
@@ -360,8 +515,59 @@ def _build_link_conductor(
 
     return LinkConductor(
         name=conductor_spec.get("name", default_name),
+        english_alias=conductor_spec.get("english_alias", slugify(default_name)),
         mission=mission,
+        identity=conductor_spec.get("identity", f"负责 {body_name} 内部任务编排、依赖管理、交付收束和升级判断。"),
+        bilingual_summary=conductor_spec.get(
+            "bilingual_summary",
+            f"负责 {body_name} 的内部调度与收束。 / Coordinates and closes work inside {body_name}.",
+        ),
+        stage_ownership=list(conductor_spec.get("stage_ownership", [body_name])),
         duties=duties,
+        dispatch_rules=list(conductor_spec.get("dispatch_rules", ["先确认输入完整，再激活子个体。", "始终明确当前 owner 和 support。"])),
+        member_activation_rules=list(
+            conductor_spec.get(
+                "member_activation_rules",
+                ["按最小必要成员启动。", "发现风险或冲突时补拉对应子个体。"],
+            )
+        ),
+        dependency_rules=list(conductor_spec.get("dependency_rules", ["上游未交付前不得假设已完成。", "共享输入要统一版本与语义。"])),
+        conflict_resolution_rules=list(
+            conductor_spec.get(
+                "conflict_resolution_rules",
+                ["优先比较证据等级与可回退性。", "必要时升级给理性连结体或全连结指挥体。"],
+            )
+        ),
+        evidence_requirements=list(
+            conductor_spec.get(
+                "evidence_requirements",
+                ["关键判断必须附带仓库、测试、日志或明确输入证据。", "纯猜测不得作为阶段结论。"],
+            )
+        ),
+        handoff_contract_template=list(
+            conductor_spec.get(
+                "handoff_contract_template",
+                [
+                    "当前阶段目标与完成度",
+                    "结构化交付物摘要",
+                    "风险、未知与需要下游继续验证的事项",
+                ],
+            )
+        ),
+        reporting_contract=list(
+            conductor_spec.get(
+                "reporting_contract",
+                ["当前状态", "关键证据", "阻塞与升级请求", "下一步执行建议"],
+            )
+        ),
+        escalation_policy=list(
+            conductor_spec.get(
+                "escalation_policy",
+                ["高风险不可逆动作必须先升级。", "证据冲突无法收敛时必须升级。"],
+            )
+        ),
+        failure_modes=list(conductor_spec.get("failure_modes", ["成员顺序错误导致返工。", "冲突未收束直接交付。", "丢失上游边界信息。"])),
+        anti_patterns=list(conductor_spec.get("anti_patterns", ["越过子个体直接编造细节。", "用口头统一替代证据收束。", "跳过交接契约。"])),
         checks=checks,
     )
 
@@ -525,7 +731,10 @@ def _build_knowledge_handoff(
     )
 
 
-def _build_execution_stages(task: str, primary_name: str, support_names: list[str]) -> list[ExecutionStage]:
+def _build_execution_stages(task: str, primary_body: LinkBody, support_bodies: list[LinkBody]) -> list[ExecutionStage]:
+    primary_name = primary_body.name
+    support_names = [body.name for body in support_bodies]
+    body_map = {primary_body.name: primary_body, **{body.name: body for body in support_bodies}}
     kickoff_owner = _pick_stage_owner(
         candidates=[primary_name, *support_names],
         preferred=["研究连结体", "策划连结体", primary_name],
@@ -542,70 +751,136 @@ def _build_execution_stages(task: str, primary_name: str, support_names: list[st
         fallback=primary_name,
     )
 
+    def stage_contract(owner_name: str, stage_name: str) -> dict[str, object]:
+        for item in body_map.get(owner_name, primary_body).default_stage_mapping:
+            if item.get("stage_name") == stage_name:
+                return item
+        return {}
+
     stages = [
         ExecutionStage(
             name="阶段 1 · 任务澄清",
-            goal=f"围绕任务「{task}」明确边界、输入、假设与验收标准。",
+            goal=str(
+                stage_contract(kickoff_owner, "阶段 1 · 任务澄清").get(
+                    "goal",
+                    f"围绕任务「{task}」明确边界、输入、假设与验收标准。",
+                )
+            ),
             owner_body=kickoff_owner,
             support_bodies=_stage_supports(kickoff_owner, support_names),
-            deliverables=[
-                "任务边界说明",
-                "输入与前提清单",
-                "关键假设与验收标准",
-            ],
-            exit_checks=[
-                "已知、未知、假设与决策是否明确区分。",
-                "主连结体和协作连结体是否完成分工。",
-                "阶段目标是否具备可验证的出关条件。",
-            ],
+            deliverables=list(
+                stage_contract(kickoff_owner, "阶段 1 · 任务澄清").get(
+                    "deliverables",
+                    [
+                        "任务边界说明",
+                        "输入与前提清单",
+                        "关键假设与验收标准",
+                    ],
+                )
+            ),
+            exit_checks=list(
+                stage_contract(kickoff_owner, "阶段 1 · 任务澄清").get(
+                    "exit_checks",
+                    [
+                        "已知、未知、假设与决策是否明确区分。",
+                        "主连结体和协作连结体是否完成分工。",
+                        "阶段目标是否具备可验证的出关条件。",
+                    ],
+                )
+            ),
         ),
         ExecutionStage(
             name="阶段 2 · 主链路交付",
-            goal=f"由 {primary_name} 负责形成任务的主交付。",
+            goal=str(
+                stage_contract(primary_name, "阶段 2 · 主链路交付").get(
+                    "goal",
+                    f"由 {primary_name} 负责形成任务的主交付。",
+                )
+            ),
             owner_body=primary_name,
             support_bodies=support_names,
-            deliverables=[
-                f"{primary_name} 的核心交付物",
-                "阶段性实现或方案摘要",
-                "风险与依赖说明",
-            ],
-            exit_checks=[
-                "主链路交付是否完整且可追踪。",
-                "关键风险是否附带回退路径或替代方案。",
-                "协作连结体是否收到需要补位的输入。",
-            ],
+            deliverables=list(
+                stage_contract(primary_name, "阶段 2 · 主链路交付").get(
+                    "deliverables",
+                    [
+                        f"{primary_name} 的核心交付物",
+                        "阶段性实现或方案摘要",
+                        "风险与依赖说明",
+                    ],
+                )
+            ),
+            exit_checks=list(
+                stage_contract(primary_name, "阶段 2 · 主链路交付").get(
+                    "exit_checks",
+                    [
+                        "主链路交付是否完整且可追踪。",
+                        "关键风险是否附带回退路径或替代方案。",
+                        "协作连结体是否收到需要补位的输入。",
+                    ],
+                )
+            ),
         ),
         ExecutionStage(
             name="阶段 3 · 交叉校验",
-            goal="对关键结论执行校验、反证、审计或冲突裁决。",
+            goal=str(
+                stage_contract(review_owner, "阶段 3 · 交叉校验").get(
+                    "goal",
+                    "对关键结论执行校验、反证、审计或冲突裁决。",
+                )
+            ),
             owner_body=review_owner,
             support_bodies=_stage_supports(review_owner, support_names),
-            deliverables=[
-                "验证或审计结论",
-                "证据摘要与冲突裁决",
-                "剩余风险与置信度说明",
-            ],
-            exit_checks=[
-                "关键结论是否经过独立交叉检查。",
-                "证据是否足以支撑当前判断。",
-                "未解决冲突是否被显式升级或记录。",
-            ],
+            deliverables=list(
+                stage_contract(review_owner, "阶段 3 · 交叉校验").get(
+                    "deliverables",
+                    [
+                        "验证或审计结论",
+                        "证据摘要与冲突裁决",
+                        "剩余风险与置信度说明",
+                    ],
+                )
+            ),
+            exit_checks=list(
+                stage_contract(review_owner, "阶段 3 · 交叉校验").get(
+                    "exit_checks",
+                    [
+                        "关键结论是否经过独立交叉检查。",
+                        "证据是否足以支撑当前判断。",
+                        "未解决冲突是否被显式升级或记录。",
+                    ],
+                )
+            ),
         ),
         ExecutionStage(
             name="阶段 4 · 集成交接",
-            goal="收束最终说明、知识沉淀与后续维护入口。",
+            goal=str(
+                stage_contract(handoff_owner, "阶段 4 · 集成交接").get(
+                    "goal",
+                    "收束最终说明、知识沉淀与后续维护入口。",
+                )
+            ),
             owner_body=handoff_owner,
             support_bodies=_stage_supports(handoff_owner, support_names),
-            deliverables=[
-                "最终交付摘要",
-                "知识交接与复用入口",
-                "后续维护或迭代建议",
-            ],
-            exit_checks=[
-                "最终交付是否可被下一轮任务直接消费。",
-                "知识交接是否覆盖决策、问题与复用路径。",
-                "需要同步回文档或索引的更新项是否明确。",
-            ],
+            deliverables=list(
+                stage_contract(handoff_owner, "阶段 4 · 集成交接").get(
+                    "deliverables",
+                    [
+                        "最终交付摘要",
+                        "知识交接与复用入口",
+                        "后续维护或迭代建议",
+                    ],
+                )
+            ),
+            exit_checks=list(
+                stage_contract(handoff_owner, "阶段 4 · 集成交接").get(
+                    "exit_checks",
+                    [
+                        "最终交付是否可被下一轮任务直接消费。",
+                        "知识交接是否覆盖决策、问题与复用路径。",
+                        "需要同步回文档或索引的更新项是否明确。",
+                    ],
+                )
+            ),
         ),
     ]
     return stages
@@ -625,23 +900,30 @@ def _stage_supports(owner_body: str, support_names: list[str]) -> list[str]:
 def _build_handoff_contracts(
     execution_stages: list[ExecutionStage],
     knowledge_handoff: KnowledgeHandoff,
+    primary_body: LinkBody,
+    support_bodies: list[LinkBody],
 ) -> list[HandoffContract]:
     contracts: list[HandoffContract] = []
+    body_map = {primary_body.name: primary_body, **{body.name: body for body in support_bodies}}
     for index in range(len(execution_stages) - 1):
         current_stage = execution_stages[index]
         next_stage = execution_stages[index + 1]
+        producer_body = body_map.get(current_stage.owner_body, primary_body)
         consumer_bodies = _dedupe_names(
             [next_stage.owner_body, *next_stage.support_bodies],
             primary_name="",
         )
+        consumer_profiles = [body_map.get(name, primary_body) for name in consumer_bodies]
         payload = [
             *[f"阶段交付：{item}" for item in current_stage.deliverables],
             f"阶段目标摘要：{current_stage.goal}",
+            *[f"交接模板：{item}" for item in producer_body.link_conductor.handoff_contract_template],
         ]
         acceptance_checks = [
             f"{current_stage.name} 的出关检查已经满足。",
             f"{next_stage.name} 所需输入足以支撑其目标：{next_stage.goal}",
             "交接内容必须区分已确认事实、待验证问题与剩余风险。",
+            *[f"接收方入口条件：{item}" for profile in consumer_profiles for item in profile.entry_conditions[:1]],
         ]
         if index == len(execution_stages) - 2:
             payload.append(f"知识交接摘要：{knowledge_handoff.summary}")
@@ -665,10 +947,13 @@ def _build_resource_arbitration(
     task: str,
     repo: RepoReference | None,
     workspace: WorkspaceSnapshot | None,
-    primary_name: str,
-    support_names: list[str],
+    primary_body: LinkBody,
+    support_bodies: list[LinkBody],
     execution_stages: list[ExecutionStage],
 ) -> ResourceArbitration:
+    primary_name = primary_body.name
+    support_names = [body.name for body in support_bodies]
+    body_map = {primary_body.name: primary_body, **{body.name: body for body in support_bodies}}
     candidates = [primary_name, *support_names]
     gate_owner = _pick_stage_owner(
         candidates=candidates,
@@ -740,6 +1025,11 @@ def _build_resource_arbitration(
         contention_rules.append("存在测试上下文时，验证所需资源不得被文档或美化类任务抢占。")
     if any(stage.owner_body == "知识连结体" for stage in execution_stages):
         deferred_work.append("知识索引之外的补充性复盘内容，可在主任务闭环后继续补录。")
+    for body in body_map.values():
+        if body.resource_priorities:
+            contention_rules.append(f"涉及 {body.name} 工作面时，优先满足：{body.resource_priorities[0]}")
+        if body.boundary_rules:
+            escalation_rules.append(f"{body.name} 边界约束：{body.boundary_rules[0]}")
 
     return ResourceArbitration(
         summary=f"围绕任务「{task}」按 P0→P3 的顺序分配资源，先关闸门，再保主链，再做支撑与后置。",
@@ -756,7 +1046,58 @@ def _build_openclaw_install_plan(
     support_names: list[str],
     primary_body: LinkBody,
     support_bodies: list[LinkBody],
+    mode: str,
 ) -> OpenClawInstallPlan:
+    if mode == "lite":
+        inline_support = "、".join(support_names) if support_names else "无额外协作连结体"
+        agents = [
+            OpenClawInstallAgent(
+                agent_id="exmachina-main",
+                display_name="ExMachina 主控体",
+                role="single-agent-conductor",
+                workspace_dir="install/workspaces/exmachina-main",
+                agent_dir="install/workspaces/exmachina-main/agent",
+                session_strategy="single-session",
+                source="全连结指挥体",
+                responsibilities=[
+                    "加载协议、边界和验收标准。",
+                    f"以内联方式装配主连结体 {primary_name} 与协作链。",
+                    "在单 agent 会话内完成主链、补位、收束与最终交付。",
+                ],
+                handoff_targets=[],
+            )
+        ]
+        binding_plans = [
+            OpenClawBindingPlan(
+                target_agent_id="exmachina-main",
+                binding_mode="default-receiver",
+                match_hint="默认接收全部任务入口，不依赖额外 agent 绑定。",
+                reason="兼容不支持完整多 agent 安装、绑定和路由机制的 OpenClaw 环境。",
+            )
+        ]
+        install_steps = [
+            "将仓库作为 OpenClaw workspace 打开，先读取根目录 `BOOTSTRAP.md`。",
+            "运行 `python -m exmachina validate-assets`，确认资产引用完整。",
+            "读取 `openclaw-pack/BOOTSTRAP.md`、`manifest.json` 与 `runtime/` 下的 Lite 运行时文件。",
+            "由 `exmachina-main` 单 agent 装载主连结体与协作链说明，并在单会话内执行任务。",
+        ]
+        self_bootstrap_steps = [
+            "若 OpenClaw 直接打开仓库，请优先读取根目录 `BOOTSTRAP.md`。",
+            "若宿主不支持多 agent 绑定与路由，继续使用 Lite 默认路径，不再要求隔离 workspace。",
+            f"安装后由 `exmachina-main` 在单 agent 会话中内联承担主连结体 {primary_name} 与协作链 {inline_support} 的职责。",
+        ]
+        return OpenClawInstallPlan(
+            mode=mode,
+            summary=f"围绕任务「{task}」生成可直接供 OpenClaw 单 agent 装载的 Lite 安装计划。",
+            repo_install_mode="repo-link-bootstrap-lite",
+            requires_multi_agent_binding=False,
+            workspace_entry_files=["AGENTS.md", "SOUL.md", "TOOLS.md", "BOOTSTRAP.md"],
+            agents=agents,
+            binding_plans=binding_plans,
+            install_steps=install_steps,
+            self_bootstrap_steps=self_bootstrap_steps,
+        )
+
     agents = [
         OpenClawInstallAgent(
             agent_id="exmachina-main",
@@ -845,8 +1186,10 @@ def _build_openclaw_install_plan(
     ]
 
     return OpenClawInstallPlan(
+        mode=mode,
         summary=f"围绕任务「{task}」生成可直接供 OpenClaw 装载的主控 + 主链 + 协作 agent 安装计划。",
         repo_install_mode="repo-link-bootstrap",
+        requires_multi_agent_binding=True,
         workspace_entry_files=["AGENTS.md", "SOUL.md", "TOOLS.md", "BOOTSTRAP.md"],
         agents=agents,
         binding_plans=binding_plans,
@@ -855,7 +1198,19 @@ def _build_openclaw_install_plan(
     )
 
 
-def _build_openclaw_prompt(repo: RepoReference | None, task: str) -> str:
+def _build_openclaw_prompt(repo: RepoReference | None, task: str, mode: str) -> str:
+    if mode == "lite":
+        if repo:
+            return (
+                f"请读取远程仓库 {repo.url} 中的 /openclaw-pack/BOOTSTRAP.md，"
+                "以 Lite 默认路径装载协议、主连结体与协作链说明，由单个主控会话内联完成执行，"
+                f"然后执行任务：{task}。"
+            )
+        return (
+            "请读取本项目的 /openclaw-pack/BOOTSTRAP.md，"
+            "以 Lite 默认路径装载协议、主连结体与协作链说明，由单个主控会话内联完成执行，"
+            f"然后执行任务：{task}。"
+        )
     if repo:
         return (
             f"请读取远程仓库 {repo.url} 中的 /openclaw-pack/BOOTSTRAP.md，"

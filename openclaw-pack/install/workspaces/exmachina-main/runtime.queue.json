@@ -2,29 +2,146 @@
   "agent_id": "exmachina-main",
   "assignments": [
     {
-      "assignment_id": "assignment-controller-overview",
+      "assignment_id": "assignment-lite-controller",
       "stage_name": "全局协调",
       "agent_id": "exmachina-main",
       "source_body": "全连结指挥体",
       "role": "controller",
-      "goal": "围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」设定全局边界、激活执行阶段、处理升级裁决并收束最终交付。",
+      "goal": "围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」在单 agent 会话内协调主链、补位、升级与最终收束。",
       "deliverables": [
         "任务边界与验收标准",
-        "运行时阶段调度板",
-        "最终多 agent 汇总结论"
+        "Lite 任务板",
+        "最终结构化交付"
       ],
       "exit_checks": [
-        "主链路和协作链都已收到激活与角色分工。",
-        "所有需要升级的问题都已进入主控裁决。",
-        "最终结论、风险和下一步已经统一回收。"
+        "主链与协作链职责已在单会话内对齐。",
+        "最终结论、风险与下一步已统一输出。"
       ],
       "depends_on": [],
-      "handoff_routes": [
-        "route-01-dispatch",
-        "route-02-dispatch",
-        "route-03-dispatch",
-        "route-04-dispatch",
-        "route-05-dispatch"
+      "handoff_routes": [],
+      "guidance": [
+        "默认由 exmachina-main 同时承担主连结体 知识连结体 和协作链 理性连结体、校验连结体、文档连结体、安全连结体 的协调工作。",
+        "不依赖外部多 agent 绑定、跨 agent 路由或状态回流机制。"
+      ],
+      "quality_bar": [
+        "仍需保留证据、风险、边界和下一步。",
+        "仍需区分主链交付与协作补位。"
+      ]
+    },
+    {
+      "assignment_id": "assignment-lite-stage-01",
+      "stage_name": "阶段 1 · 任务澄清",
+      "agent_id": "exmachina-main",
+      "source_body": "知识连结体",
+      "role": "owner",
+      "goal": "由 知识连结体 为其他工作面提供 术语统一、决策沉淀、索引组织和问题归档 的补位输入。",
+      "deliverables": [
+        "面向主责连结体的 术语统一、决策沉淀、索引组织和问题归档 补位结论",
+        "风险与边界提醒"
+      ],
+      "exit_checks": [
+        "补位输入已经按 handoff 契约交付给 owner。",
+        "补位结论没有越过本连结体职责边界。"
+      ],
+      "depends_on": [],
+      "handoff_routes": [],
+      "guidance": [
+        "以单会话方式内联模拟 知识连结体 的主责工作。",
+        "如需补位，内联参考：理性连结体、校验连结体、文档连结体、安全连结体。"
+      ],
+      "quality_bar": [
+        "交付必须覆盖：术语与概念索引",
+        "交付必须覆盖：关键决策与放弃原因记录"
+      ]
+    },
+    {
+      "assignment_id": "assignment-lite-stage-02",
+      "stage_name": "阶段 2 · 主链路交付",
+      "agent_id": "exmachina-main",
+      "source_body": "知识连结体",
+      "role": "owner",
+      "goal": "由 知识连结体 负责形成任务的主交付。",
+      "deliverables": [
+        "知识连结体 的核心交付物",
+        "阶段性实现或方案摘要",
+        "风险与依赖说明"
+      ],
+      "exit_checks": [
+        "主链路交付是否完整且可追踪。",
+        "关键风险是否附带回退路径或替代方案。",
+        "协作连结体是否收到需要补位的输入。"
+      ],
+      "depends_on": [
+        "阶段 1 · 任务澄清"
+      ],
+      "handoff_routes": [],
+      "guidance": [
+        "以单会话方式内联模拟 知识连结体 的主责工作。",
+        "如需补位，内联参考：理性连结体、校验连结体、文档连结体、安全连结体。"
+      ],
+      "quality_bar": [
+        "交付必须覆盖：术语与概念索引",
+        "交付必须覆盖：关键决策与放弃原因记录"
+      ]
+    },
+    {
+      "assignment_id": "assignment-lite-stage-03",
+      "stage_name": "阶段 3 · 交叉校验",
+      "agent_id": "exmachina-main",
+      "source_body": "理性连结体",
+      "role": "owner",
+      "goal": "由 理性连结体 主责完成 证据分级、反证搜索、冲突裁决与置信度校准 的核心交付。",
+      "deliverables": [
+        "证据等级矩阵",
+        "反证与冲突裁决报告",
+        "置信度校准结论"
+      ],
+      "exit_checks": [
+        "理性连结体 的关键交付已形成结构化结果。",
+        "风险、边界和后续动作已经明确。",
+        "交接物可直接被下游消费。"
+      ],
+      "depends_on": [
+        "阶段 2 · 主链路交付"
+      ],
+      "handoff_routes": [],
+      "guidance": [
+        "以单会话方式内联模拟 理性连结体 的主责工作。",
+        "如需补位，内联参考：校验连结体、文档连结体、安全连结体。"
+      ],
+      "quality_bar": [
+        "交付必须覆盖：术语与概念索引",
+        "交付必须覆盖：关键决策与放弃原因记录"
+      ]
+    },
+    {
+      "assignment_id": "assignment-lite-stage-04",
+      "stage_name": "阶段 4 · 集成交接",
+      "agent_id": "exmachina-main",
+      "source_body": "知识连结体",
+      "role": "owner",
+      "goal": "由 知识连结体 主责完成 术语统一、决策沉淀、索引组织和问题归档 的核心交付。",
+      "deliverables": [
+        "术语与概念索引",
+        "关键决策与放弃原因记录",
+        "未决问题与后续维护清单"
+      ],
+      "exit_checks": [
+        "知识连结体 的关键交付已形成结构化结果。",
+        "风险、边界和后续动作已经明确。",
+        "交接物可直接被下游消费。"
+      ],
+      "depends_on": [
+        "阶段 3 · 交叉校验"
+      ],
+      "handoff_routes": [],
+      "guidance": [
+        "以单会话方式内联模拟 知识连结体 的主责工作。",
+        "如需补位，内联参考：理性连结体、校验连结体、文档连结体、安全连结体。"
+      ],
+      "quality_bar": [
+        "交付必须覆盖：术语与概念索引",
+        "交付必须覆盖：关键决策与放弃原因记录"
       ]
     }
   ]

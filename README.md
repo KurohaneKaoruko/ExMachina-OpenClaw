@@ -48,11 +48,23 @@
 2. **把仓库链接直接交给 OpenClaw**  
    只要它能把仓库作为 workspace 打开，就可以先按照根目录 `BOOTSTRAP.md` 的步骤自举，再读取 `openclaw-pack/install/` 下的安装计划。
 
+默认导出模式现在是 **Lite-first**：
+
+- 默认 `lite`：单主控会话可装载，不依赖完整多 agent 绑定与路由机制；
+- 显式 `full`：保留完整多 agent 安装、绑定、路由与 runtime 协作模型。
+
+如果你的 OpenClaw 只支持“打开一个仓库 → 读取几个文件 → 在单会话里继续执行”，那就直接使用默认 `lite` 即可。
+
+在这种场景下，最关键的两个文件是：
+
+- `openclaw-pack/manifest.json`：给 OpenClaw 的最小装载说明与快速启动提示；
+- `openclaw-pack/runtime/task-board.json`：给 OpenClaw 的最小执行任务板与顺序步骤。
+
 推荐安装步骤：
 
 ```bash
 python -m exmachina validate-assets
-python skills/exmachina-project-maintainer/scripts/regenerate_demo_pack.py
+python skills/scripts/regenerate_demo_pack.py
 ```
 
 真正给 OpenClaw 用的安装入口在：
@@ -64,7 +76,8 @@ python skills/exmachina-project-maintainer/scripts/regenerate_demo_pack.py
 这三者组合起来的目标是：
 
 - 先把仓库自身变成一个可读取的 OpenClaw workspace；
-- 再把主控 agent、主连结体 agent 和协作 agent 的安装计划显式化；
+- 默认先给出一个 Lite 单 agent 可装载路径；
+- 在需要时再给出主控 agent、主连结体 agent 和协作 agent 的完整安装计划；
 - 最后让 OpenClaw 在安装完成后回到 `openclaw-pack/BOOTSTRAP.md` 进入工作流。
 
 ---
@@ -560,15 +573,41 @@ docs/
   ARCHITECTURE.md
 
 skills/
-  exmachina-project-maintainer/
+  SKILL.md
+  references/
+  scripts/
+    regenerate_role_assets.py
+    regenerate_demo_pack.py
+    validate_profile_assets.py
+  planning-link-body/
     SKILL.md
-    references/
-    scripts/
+  research-link-body/
+    SKILL.md
+  architecture-link-body/
+    SKILL.md
+  implementation-link-body/
+    SKILL.md
+  validation-link-body/
+    SKILL.md
+  integration-link-body/
+    SKILL.md
+  documentation-link-body/
+    SKILL.md
+  operations-link-body/
+    SKILL.md
+  security-link-body/
+    SKILL.md
+  knowledge-link-body/
+    SKILL.md
+  rationality-link-body/
+    SKILL.md
 
 tests/
   test_cli.py
   test_planner.py
   test_repository.py
+  test_profile.py
+  test_validator.py
 
 openclaw-pack/
   BOOTSTRAP.md
@@ -587,25 +626,32 @@ openclaw-pack/
 
 ## 仓库内 Skill
 
-项目内置了一个仓库级 Skill：`skills/exmachina-project-maintainer/SKILL.md`。
+项目内置了一个仓库级 Skill：`skills/SKILL.md`。
 
 它适合在以下场景使用：
 
 - 新增或调整连结体、连结指挥体、子个体；
 - 调整 `MissionPlan` 结构、导出字段或 `openclaw-pack/` 生成方式；
+- 批量重生成 richer prompt assets 与按连结体拆分的 repo-local skills；
 - 同步 README、架构图和示例包；
 - 重生成仓库中的演示 `openclaw-pack/`。
+
+如果想重生成当前仓库里的角色资产与 repo-local skills，可以直接运行：
+
+```bash
+python skills/scripts/regenerate_role_assets.py
+```
 
 如果只想重生成当前仓库里的示例包，可以直接运行：
 
 ```bash
-python skills/exmachina-project-maintainer/scripts/regenerate_demo_pack.py
+python skills/scripts/regenerate_demo_pack.py
 ```
 
 如果只想校验当前仓库的资产引用关系，可以直接运行：
 
 ```bash
-python skills/exmachina-project-maintainer/scripts/validate_profile_assets.py
+python skills/scripts/validate_profile_assets.py
 ```
 
 或者直接使用 CLI：
@@ -619,7 +665,39 @@ python -m exmachina validate-assets
 - `default_profile.json` 是否只引用存在的连结体 / 指挥体 / 子个体文件；
 - `selection` 规则中是否引用了不存在的连结体；
 - `link_bodies/`、`conductors/`、`subagents/` 中是否存在未被引用的孤儿文件；
-- 各资产文件是否缺少必须字段。
+- 各资产文件是否缺少 richer prompt schema 的必须字段；
+- `recommended_skill` / `skill_catalog` 是否引用了存在的 repo-local skill。
+
+### richer prompt schema
+
+当前 `exmachina/data/` 不再只保存极简的 `mission / outputs / checks`。
+
+现在每类资产都会补充结构化字段，例如：
+
+- **子个体**：身份、核心职责、非目标、输入要求、工作流、推理规则、输出契约、交接对象、升级触发、失败模式、质量标准；
+- **连结指挥体**：主责阶段、调度规则、成员激活规则、依赖规则、冲突收束规则、交接模板、汇报契约、升级政策；
+- **连结体**：使用场景、进入条件、退出条件、交付契约、协作能力、边界规则、回退模式、推荐 skill、默认阶段映射；
+- **画像入口**：`content_policy`、`asset_defaults`、`validation_policy`、`skill_catalog`。
+
+这些字段会被 `planner.py`、`runtime.py`、`exporter.py` 直接消费，而不是只作为静态文案存在。
+
+### 按连结体拆分的 Skills
+
+除了仓库维护 Skill 外，当前还提供按连结体拆分的 repo-local skills：
+
+- `skills/planning-link-body/SKILL.md`
+- `skills/research-link-body/SKILL.md`
+- `skills/architecture-link-body/SKILL.md`
+- `skills/implementation-link-body/SKILL.md`
+- `skills/validation-link-body/SKILL.md`
+- `skills/integration-link-body/SKILL.md`
+- `skills/documentation-link-body/SKILL.md`
+- `skills/operations-link-body/SKILL.md`
+- `skills/security-link-body/SKILL.md`
+- `skills/knowledge-link-body/SKILL.md`
+- `skills/rationality-link-body/SKILL.md`
+
+这些 skills 用来把“主链路/协作链如何干活”从概念说明提升为可复用的职责模板、边界约束、交接模板和质量门槛。
 
 ---
 
@@ -644,11 +722,12 @@ python -m exmachina validate-assets
 | `exmachina/cli.py` | 命令行入口，解析 `plan` / `build` / `export-pack` |
 | `exmachina/planner.py` | 选择主连结体、协作连结体，生成结构并记录编排依据 |
 | `exmachina/runtime.py` | 把任务计划编译为可消费的运行时拓扑、任务队列与 handoff 路由 |
-| `exmachina/models.py` | 定义任务、协议、连结体、连结指挥体、子个体与选择依据结构 |
-| `exmachina/exporter.py` | 导出 `mission.json`、`mission.md`、`openclaw-pack/`、`runtime/` 及编排解释 |
+| `exmachina/models.py` | 定义任务、协议、连结体、连结指挥体、子个体、运行时拓扑与 richer prompt schema |
+| `exmachina/exporter.py` | 导出 `mission.json`、`mission.md`、`openclaw-pack/`、`runtime/` 及完整角色协议文档 |
 | `exmachina/repository.py` | 解析远程仓库链接 |
 | `exmachina/workspace.py` | 扫描本地工作区 |
 | `exmachina/profile.py` | 读取角色画像和理性协议配置 |
+| `exmachina/validator.py` | 严格校验 richer prompt assets、skill 绑定和索引完整性 |
 
 ---
 
@@ -693,10 +772,24 @@ flowchart TD
 
 ```bash
 python -m exmachina build \
+  --mode lite \
   --task "为 OpenClaw 构建协议化多智能体协作层" \
   --repo "https://code.example.com/your-name/exmachina" \
   --workspace "." \
   --out "dist/demo"
+```
+
+默认模式就是 `lite`，适合当前不支持完整多 agent 绑定 / 路由机制的 OpenClaw 宿主。
+
+### 生成完整 Full 模式任务包
+
+```bash
+python -m exmachina build \
+  --mode full \
+  --task "为 OpenClaw 构建协议化多智能体协作层" \
+  --repo "https://code.example.com/your-name/exmachina" \
+  --workspace "." \
+  --out "dist/demo-full"
 ```
 
 ### 只生成任务编排
@@ -712,6 +805,7 @@ python -m exmachina plan \
 
 ```bash
 python -m exmachina export-pack \
+  --mode lite \
   --task "让 OpenClaw 从仓库链接直接应用 ExMachina" \
   --repo "https://code.example.com/your-name/exmachina" \
   --out "dist/openclaw-pack"
