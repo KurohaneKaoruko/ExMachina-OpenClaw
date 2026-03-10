@@ -1,5 +1,13 @@
 {
   "mode": "full",
+  "supported_modes": [
+    "lite",
+    "full"
+  ],
+  "mode_notes": {
+    "lite": "不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行。",
+    "full": "在 OpenClaw 中创建全部子个体 agent；任务板仍以连结体为粒度。"
+  },
   "summary": "多智能体任务板，用于主控体调度主连结体与协作连结体。",
   "ordered_execution_steps": [
     {

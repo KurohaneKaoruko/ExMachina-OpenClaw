@@ -37,14 +37,15 @@
 
 ## 使用方式
 
-这个仓库就是可直接交给 OpenClaw 的协作包，默认是**全量多智能体模式**。
+这个仓库就是可直接交给 OpenClaw 的协作包，支持 **lite / full** 两种模式（默认 full）。
+`lite` 不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行；`full` 在 OpenClaw 中创建全部子个体 agent。
 
 最简单的使用方式：
 
 1. 把仓库交给 OpenClaw 作为 workspace 打开。
 2. 先读取根目录 `PROMPT.md`。
-3. 按 `install/INTAKE.md` 问清语言、主控体显示名、配置路径、workspace 路径与宿主多 agent 能力。
-4. 通过 `install.sh` 或按 `install/SETTINGS.md` 手动合并 `exmachina/openclaw.settings.json`。
+3. 按 `install/INTAKE.md` 问清语言、主控体显示名、配置路径、workspace 路径、宿主多 agent 能力与安装模式。
+4. 通过 `install.sh --mode lite|full` 或按 `install/SETTINGS.md` 手动合并对应 settings：`exmachina/openclaw.settings.lite.json` 或 `exmachina/openclaw.settings.json`。
 5. 进入 `exmachina/BOOTSTRAP.md` 启动任务。
 
 如果宿主不支持多 agent 绑定与外部路由，请停止安装。
@@ -79,7 +80,7 @@
 | 理性协议层 | 已实现 | 绝对理性协议、证据分级、冲突裁决、输出契约 |
 | 连结体建模 | 已实现 | 全连结指挥体、连结体、指挥体、子个体 |
 | 多智能体运行时 | 已实现 | 拓扑、任务板、agent 队列与回流 |
-| 设置导入模板 | 已实现 | OpenClaw settings-first 模板 |
+| 设置导入模板 | 已实现 | OpenClaw settings-first 模板（lite / full） |
 | 安装问询 | 已实现 | 语言、主控体显示名、路径与多 agent 能力 |
 | 运行时说明 | 已实现 | runtime 规则与协作口吻 |
 
@@ -96,6 +97,8 @@
    └─ 子个体 × N
 ```
 
+`lite` 不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行；`full` 会在 OpenClaw 中创建全部子个体 agent。
+
 ---
 
 ## 项目目录
@@ -107,6 +110,7 @@ exmachina/
   README.md
   manifest.json
   openclaw.settings.json
+  openclaw.settings.lite.json
   protocols/
   agents/
   workflows/
@@ -151,9 +155,6 @@ flowchart TD
     PACK --> MANI[manifest.json]
     PACK --> PROTO[protocols/]
     PACK --> COND[agents/]
-    PACK --> BODIES[agents/]
-    PACK --> BODYC[agents/]
-    PACK --> SUBS[agents/]
     PACK --> RUNTIME[runtime/]
     RUNTIME --> TOP[topology.json]
     RUNTIME --> TASK[task-board.json]

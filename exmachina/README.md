@@ -3,7 +3,7 @@
 这是一个可直接放入远程仓库并供 OpenClaw 读取的协作包。
 项目名为 ExMachina，用于为 OpenClaw 提供 settings-first 的协议化多智能体协作包。
 首次使用请先读 `install/INTAKE.md` 与 `QUICKSTART.md`，再按需深入 `BOOTSTRAP.md`、`manifest.json` 与 `runtime/README.md`。
-默认导出模式：full
+支持模式：lite / full（默认 full）
 多 agent 绑定要求：需要
 外部路由要求：需要
 
@@ -16,7 +16,7 @@
 执行阶段：共 4 个阶段，详见 `manifest.json` 中的 `execution_stages`。
 交接契约：共 3 份，详见 `manifest.json` 中的 `handoff_contracts`。
 资源仲裁：见 `manifest.json` 中的 `resource_arbitration`。
-设置导入：见 `openclaw.settings.json` 与 `install/SETTINGS.md`。
+设置导入：见 `openclaw.settings.lite.json` / `openclaw.settings.json` 与 `install/SETTINGS.md`。
 知识交接摘要：围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」输出可复用的知识交接，支撑下一轮任务继续推进。
 
 关键目录：
@@ -25,7 +25,8 @@
 - `agents/`：连结体协议
 - `agents/`：各连结体的内部指挥规则
 - `agents/`：成员子个体规则
-- `openclaw.settings.json`：首选 OpenClaw 设置导入模板
+- `openclaw.settings.lite.json`：轻量模式设置模板（不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行）
+- `openclaw.settings.json`：全量模式设置模板（在 OpenClaw 中创建全部子个体 agent）
 - `install/INTAKE.md`：安装前问询清单与阻断规则
 - `install/intake.template.json`：安装问询答案模板
 - `install/`：settings-first 说明与设置导入指南

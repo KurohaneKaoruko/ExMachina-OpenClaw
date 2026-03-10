@@ -1,7 +1,7 @@
 # ExMachina Runtime
 
 这一层提供多智能体运行时拓扑与任务板。
-模式：full
+模式：lite / full（默认 full）
 主控体：exmachina-main
 协调模式：multi-agent-routing
 是否要求外部路由：是
@@ -10,6 +10,7 @@
 - 主控体负责调度主连结体与协作连结体。
 - 各连结体通过任务板与路由回流交付物。
 - 多智能体汇报必须使用 `[xx体]:xxx` 格式。
+- `lite` 不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行；`full` 会额外在 OpenClaw 中创建全部子个体 agent（由 settings 模板决定），运行时拓扑仍以连结体为粒度。
 
 ## 关键文件
 - `../QUICKSTART.md`：首次接入时的最短安装与执行路径

@@ -61,6 +61,7 @@ function checkPack() {
 
   ensureExists("manifest.json", errors);
   ensureExists("openclaw.settings.json", errors);
+  ensureExists("openclaw.settings.lite.json", errors);
   ensureExists("BOOTSTRAP.md", errors);
   ensureExists("QUICKSTART.md", errors);
   ensureExists("agents/00_全连结指挥体.md", errors);

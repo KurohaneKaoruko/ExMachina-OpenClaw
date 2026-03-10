@@ -1,5 +1,13 @@
 {
   "mode": "full",
+  "supported_modes": [
+    "lite",
+    "full"
+  ],
+  "mode_notes": {
+    "lite": "不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行。",
+    "full": "在 OpenClaw 中创建全部子个体 agent；运行时拓扑仍以连结体为粒度。"
+  },
   "controller_agent_id": "exmachina-main",
   "coordination_mode": "multi-agent-routing",
   "requires_external_routing": true,

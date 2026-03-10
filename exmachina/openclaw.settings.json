@@ -1,7 +1,7 @@
 {
   "mode": "full",
   "format_name": "openclaw-settings-template-v1",
-  "summary": "围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」生成的 OpenClaw 设置导入模板（全量多智能体）。",
+  "summary": "围绕任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」生成的 OpenClaw 设置导入模板（全量模式，在 OpenClaw 中创建全部子个体 agent）。",
   "target_config_paths": [
     "~/.openclaw/openclaw.json",
     "~/.clawdbot/clawdbot.json"
@@ -37,7 +37,11 @@
         "required": true,
         "default": "zh-CN",
         "placeholder": "OPENCLAW_INSTALL_LANGUAGE",
-        "options": ["zh-CN", "en-US", "ja-JP"]
+        "options": [
+          "zh-CN",
+          "en-US",
+          "ja-JP"
+        ]
       },
       {
         "key": "conductor_name",
@@ -76,6 +80,18 @@
         "type": "boolean",
         "required": true,
         "default": true
+      },
+      {
+        "key": "install_mode",
+        "label": "安装模式",
+        "prompt": "选择安装模式：lite（不在 OpenClaw 中创建子个体 agent，子个体职责由连结体内联执行）或 full（在 OpenClaw 中创建全部子个体 agent）。",
+        "type": "choice",
+        "required": true,
+        "default": "full",
+        "options": [
+          "lite",
+          "full"
+        ]
       }
     ],
     "optional_questions": [
@@ -96,11 +112,13 @@
       "协作连结体已确认：理性连结体、校验连结体、文档连结体、安全连结体。",
       "目标 OpenClaw 配置路径与 workspace 路径已确认。",
       "当前默认模型保持不变，ExMachina agent 将继承现有默认模型。",
-      "额外配置项已确认或显式留空。"
+      "额外配置项已确认或显式留空。",
+      "安装模式已确认：full。"
     ],
     "mode_resolution_rules": [
       "如果宿主不支持多 agent 绑定与路由，则禁止导入该设置模板。",
-      "如果配置路径或 workspace 路径未确认，则暂停安装。"
+      "如果配置路径或 workspace 路径未确认，则暂停安装。",
+      "安装模式必须为 full，否则停止导入该模板。"
     ],
     "answers_template": {
       "install_language": "zh-CN",
@@ -108,7 +126,8 @@
       "target_config_path": "~/.openclaw/openclaw.json",
       "workspace_root": "{{EXMACHINA_PACK_ROOT}}",
       "host_supports_multi_agent": true,
-      "extra_config_notes": ""
+      "extra_config_notes": "",
+      "install_mode": "full"
     }
   },
   "dialogue_contracts": {
@@ -235,6 +254,498 @@
             "mode": "all",
             "scope": "agent"
           }
+        },
+        {
+          "id": "exmachina-sub-30",
+          "name": "ExMachina 子个体 · 上下文体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 上下文体（隶属研究连结体）。职责与边界见 agents/30_上下文体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-31",
+          "name": "ExMachina 子个体 · 溯源体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 溯源体（隶属研究连结体）。职责与边界见 agents/31_溯源体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-32",
+          "name": "ExMachina 子个体 · 比对体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 比对体（隶属研究连结体）。职责与边界见 agents/32_比对体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-33",
+          "name": "ExMachina 子个体 · 假设体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 假设体（隶属研究连结体）。职责与边界见 agents/33_假设体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-34",
+          "name": "ExMachina 子个体 · 接驳体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 接驳体（隶属集成连结体）。职责与边界见 agents/34_接驳体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-35",
+          "name": "ExMachina 子个体 · 配置体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 配置体（隶属集成连结体）。职责与边界见 agents/35_配置体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-36",
+          "name": "ExMachina 子个体 · 发布体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 发布体（隶属集成连结体）。职责与边界见 agents/36_发布体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-37",
+          "name": "ExMachina 子个体 · 观测体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 观测体（隶属运维连结体）。职责与边界见 agents/37_观测体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-38",
+          "name": "ExMachina 子个体 · 告警体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 告警体（隶属运维连结体）。职责与边界见 agents/38_告警体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-39",
+          "name": "ExMachina 子个体 · 回滚体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 回滚体（隶属运维连结体）。职责与边界见 agents/39_回滚体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-40",
+          "name": "ExMachina 子个体 · 术语体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 术语体（隶属知识连结体）。职责与边界见 agents/40_术语体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-41",
+          "name": "ExMachina 子个体 · 决策体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 决策体（隶属知识连结体）。职责与边界见 agents/41_决策体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-42",
+          "name": "ExMachina 子个体 · 索引体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 索引体（隶属知识连结体）。职责与边界见 agents/42_索引体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-43",
+          "name": "ExMachina 子个体 · 问题体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 问题体（隶属知识连结体）。职责与边界见 agents/43_问题体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-44",
+          "name": "ExMachina 子个体 · 汇报体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 汇报体（隶属知识连结体）。职责与边界见 agents/44_汇报体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-45",
+          "name": "ExMachina 子个体 · 证据体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 证据体（隶属理性连结体）。职责与边界见 agents/45_证据体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-46",
+          "name": "ExMachina 子个体 · 反证体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 反证体（隶属理性连结体）。职责与边界见 agents/46_反证体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-47",
+          "name": "ExMachina 子个体 · 裁决体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 裁决体（隶属理性连结体）。职责与边界见 agents/47_裁决体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-48",
+          "name": "ExMachina 子个体 · 校准体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 校准体（隶属理性连结体）。职责与边界见 agents/48_校准体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-49",
+          "name": "ExMachina 子个体 · 复现体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 复现体（隶属校验连结体）。职责与边界见 agents/49_复现体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-50",
+          "name": "ExMachina 子个体 · 断言体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 断言体（隶属校验连结体）。职责与边界见 agents/50_断言体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-51",
+          "name": "ExMachina 子个体 · 回归体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 回归体（隶属校验连结体）。职责与边界见 agents/51_回归体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-52",
+          "name": "ExMachina 子个体 · 盘点体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 盘点体（隶属文档连结体）。职责与边界见 agents/52_盘点体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-53",
+          "name": "ExMachina 子个体 · 结构体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 结构体（隶属文档连结体）。职责与边界见 agents/53_结构体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-54",
+          "name": "ExMachina 子个体 · 示例体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 示例体（隶属文档连结体）。职责与边界见 agents/54_示例体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-55",
+          "name": "ExMachina 子个体 · 校订体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 校订体（隶属文档连结体）。职责与边界见 agents/55_校订体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-56",
+          "name": "ExMachina 子个体 · 威胁体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 威胁体（隶属安全连结体）。职责与边界见 agents/56_威胁体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-57",
+          "name": "ExMachina 子个体 · 审计体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 审计体（隶属安全连结体）。职责与边界见 agents/57_审计体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-58",
+          "name": "ExMachina 子个体 · 加固体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 加固体（隶属安全连结体）。职责与边界见 agents/58_加固体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-59",
+          "name": "ExMachina 子个体 · 合规体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 合规体（隶属安全连结体）。职责与边界见 agents/59_合规体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-60",
+          "name": "ExMachina 子个体 · 演练体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 演练体（隶属运维连结体）。职责与边界见 agents/60_演练体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-61",
+          "name": "ExMachina 子个体 · 边界体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 边界体（隶属架构连结体）。职责与边界见 agents/61_边界体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-62",
+          "name": "ExMachina 子个体 · 接口体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 接口体（隶属架构连结体）。职责与边界见 agents/62_接口体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-63",
+          "name": "ExMachina 子个体 · 风控体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 风控体（隶属架构连结体）。职责与边界见 agents/63_风控体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-64",
+          "name": "ExMachina 子个体 · 落图体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 落图体（隶属架构连结体）。职责与边界见 agents/64_落图体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-65",
+          "name": "ExMachina 子个体 · 侦察体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 侦察体（隶属实作连结体）。职责与边界见 agents/65_侦察体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-66",
+          "name": "ExMachina 子个体 · 拆解体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 拆解体（隶属实作连结体）。职责与边界见 agents/66_拆解体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-67",
+          "name": "ExMachina 子个体 · 约束体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 约束体（隶属实作连结体）。职责与边界见 agents/67_约束体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-68",
+          "name": "ExMachina 子个体 · 路线体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 路线体（隶属实作连结体）。职责与边界见 agents/68_路线体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-69",
+          "name": "ExMachina 子个体 · 编码体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 编码体（隶属实作连结体）。职责与边界见 agents/69_编码体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
+        },
+        {
+          "id": "exmachina-sub-70",
+          "name": "ExMachina 子个体 · 审核体",
+          "workspace": "{{EXMACHINA_PACK_ROOT}}",
+          "identity": {
+            "theme": "你是 ExMachina 子个体 · 审核体（隶属实作连结体）。职责与边界见 agents/70_审核体.md。只输出本职责范围内结论，交付给指挥体或汇报体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "sandbox": {
+            "scope": "agent",
+            "mode": "all"
+          }
         }
       ]
     }
@@ -249,7 +760,7 @@
     "不要修改 OpenClaw 当前默认模型、provider、API 或其它与 ExMachina agent 无关的配置。"
   ],
   "usage_notes": [
-    "本模板为全量多智能体模式，要求宿主支持多 agent 绑定与路由。",
+    "本模板为 full 模式，在 OpenClaw 中创建全部子个体 agent。",
     "所有 ExMachina agent 必须继承 OpenClaw 当前默认模型。",
     "如宿主不支持多 agent，请勿导入本模板。"
   ]
