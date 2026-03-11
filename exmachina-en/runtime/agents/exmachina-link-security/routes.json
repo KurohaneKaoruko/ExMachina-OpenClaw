@@ -1,0 +1,9 @@
+{
+  "agent_id": "exmachina-link-security",
+  "routes": [
+    "route-dispatch",
+    "route-status",
+    "route-security"
+  ]
+}
+

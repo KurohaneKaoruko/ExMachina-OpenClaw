@@ -13,6 +13,11 @@
   },
   "settings_patch": {
     "agents": {
+      "defaults": {
+        "subagents": {
+          "maxSpawnDepth": 2
+        }
+      },
       "list": [
         {
           "id": "exmachina-main",
@@ -24,7 +29,7 @@
           }
         },
         {
-          "id": "exmachina-support-4",
+          "id": "exmachina-link-security",
           "name": "ExMachina Support 4",
           "workspace": "{{EXMACHINA_PACK_ROOT}}",
           "identity": {
@@ -35,3 +40,4 @@
     }
   }
 }
+

@@ -1,0 +1,36 @@
+{
+  "agent_id": "exmachina-link-security",
+  "display_name": "ExMachina 协作连结体 · 安全连结体",
+  "runtime_role": "support-link-body",
+  "source": "安全连结体",
+  "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
+  "responsibilities": [
+    "负责威胁建模、权限审计、加固建议与合规收束。"
+  ],
+  "handoff_targets": [
+    "exmachina-main",
+    "exmachina-link-knowledge"
+  ],
+  "inbox_path": "runtime/agents/exmachina-link-security/inbox",
+  "outbox_path": "runtime/agents/exmachina-link-security/outbox",
+  "status_path": "runtime/agents/exmachina-link-security/status.json",
+  "assignments": [
+    "assignment-support-security"
+  ],
+  "coordination_rules": [
+    "多智能体汇报需使用 [xx体]:xxx 格式。",
+    "安全交付必须回流主控体与主连结体。"
+  ],
+  "operating_playbook": [
+    "先列出威胁面，再给出加固与合规建议。"
+  ],
+  "escalation_triggers": [
+    "发现高风险安全假设时标记需要补正。"
+  ],
+  "recommended_skill": {
+    "skill_id": "security-link-body",
+    "skill_path": "../skills/security-link-body/SKILL.md",
+    "purpose": "在任务主要命中 安全连结体 工作面时，提供对应的流程、边界和交接模板。"
+  }
+}
+

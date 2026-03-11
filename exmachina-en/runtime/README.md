@@ -3,8 +3,8 @@
 This layer provides the multi-agent runtime topology and task board.
 Mode: lite / full (default full)
 Primary conductor: exmachina-main
-Coordination mode: multi-agent-routing
-External routing required: yes
+Coordination mode: subagent-dispatch
+External routing required: no
 
 ## Notes
 - The primary conductor schedules the primary and support link bodies.
@@ -36,7 +36,7 @@ External routing required: yes
 - The primary conductor aggregates support outputs and drives phase 4 integration handoff.
 
 ## Coordination Rules
-- Multi-agent binding and external routing must be enabled.
+- Subagents (sessions_spawn) must be enabled.
 - All support link body outputs must flow back to the primary conductor and the primary link body.
 
 ## Primary Conductor Tone

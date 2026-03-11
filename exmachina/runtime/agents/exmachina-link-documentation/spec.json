@@ -1,0 +1,36 @@
+{
+  "agent_id": "exmachina-link-documentation",
+  "display_name": "ExMachina 协作连结体 · 文档连结体",
+  "runtime_role": "support-link-body",
+  "source": "文档连结体",
+  "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
+  "responsibilities": [
+    "负责盘点、结构整理、示例编写与校订发布。"
+  ],
+  "handoff_targets": [
+    "exmachina-main",
+    "exmachina-link-knowledge"
+  ],
+  "inbox_path": "runtime/agents/exmachina-link-documentation/inbox",
+  "outbox_path": "runtime/agents/exmachina-link-documentation/outbox",
+  "status_path": "runtime/agents/exmachina-link-documentation/status.json",
+  "assignments": [
+    "assignment-support-docs"
+  ],
+  "coordination_rules": [
+    "多智能体汇报需使用 [xx体]:xxx 格式。",
+    "文档交付必须回流主控体与主连结体。"
+  ],
+  "operating_playbook": [
+    "输出文档信息架构后再补示例与更新清单。"
+  ],
+  "escalation_triggers": [
+    "发现文档与实现不一致时标记需要补正。"
+  ],
+  "recommended_skill": {
+    "skill_id": "documentation-link-body",
+    "skill_path": "../skills/documentation-link-body/SKILL.md",
+    "purpose": "在任务主要命中 文档连结体 工作面时，提供对应的流程、边界和交接模板。"
+  }
+}
+

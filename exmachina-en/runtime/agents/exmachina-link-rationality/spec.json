@@ -1,0 +1,36 @@
+{
+  "agent_id": "exmachina-link-rationality",
+  "display_name": "ExMachina Support Link Body · Rationality Link Body",
+  "runtime_role": "support-link-body",
+  "source": "Rationality Link Body",
+  "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
+  "responsibilities": [
+    "Complete evidence grading, counterevidence search, conflict arbitration, and confidence calibration."
+  ],
+  "handoff_targets": [
+    "exmachina-main",
+    "exmachina-link-knowledge"
+  ],
+  "inbox_path": "runtime/agents/exmachina-link-rationality/inbox",
+  "outbox_path": "runtime/agents/exmachina-link-rationality/outbox",
+  "status_path": "runtime/agents/exmachina-link-rationality/status.json",
+  "assignments": [
+    "assignment-stage-03"
+  ],
+  "coordination_rules": [
+    "Multi-agent reporting must use the [xx-body]:xxx format.",
+    "Cross-validation outputs must flow back to the controller and the primary link body."
+  ],
+  "operating_playbook": [
+    "Provide the evidence grading matrix and counterevidence arbitration before stating confidence conclusions."
+  ],
+  "escalation_triggers": [
+    "Flag for correction when high-risk conflicts are found with insufficient evidence."
+  ],
+  "recommended_skill": {
+    "skill_id": "rationality-link-body",
+    "skill_path": "../skills/rationality-link-body/SKILL.md",
+    "purpose": "When the task primarily hits the Rationality Link Body scope, provide the matching process, boundaries, and handoff templates."
+  }
+}
+

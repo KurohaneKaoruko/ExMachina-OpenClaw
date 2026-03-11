@@ -1,0 +1,11 @@
+{
+  "agent_id": "exmachina-link-knowledge",
+  "routes": [
+    "route-dispatch",
+    "route-status",
+    "route-stage-01",
+    "route-stage-02",
+    "route-stage-04"
+  ]
+}
+

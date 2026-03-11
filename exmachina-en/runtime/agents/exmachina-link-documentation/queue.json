@@ -1,0 +1,13 @@
+{
+  "agent_id": "exmachina-link-documentation",
+  "queue": [
+    {
+      "assignment_id": "assignment-support-docs",
+      "status": "pending",
+      "depends_on": [
+        "assignment-stage-02"
+      ]
+    }
+  ]
+}
+

@@ -9,8 +9,8 @@
     "full": "在 OpenClaw 中创建全部子个体 agent；运行时拓扑仍以连结体为粒度。"
   },
   "controller_agent_id": "exmachina-main",
-  "coordination_mode": "multi-agent-routing",
-  "requires_external_routing": true,
+  "coordination_mode": "subagent-dispatch",
+  "requires_external_routing": false,
   "shared_artifacts": [
     {
       "name": "mission-context",
@@ -18,11 +18,11 @@
       "description": "全局任务上下文、主链与协作链摘要。",
       "consumers": [
         "exmachina-main",
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
+        "exmachina-link-knowledge",
+        "exmachina-link-rationality",
+        "exmachina-link-validation",
+        "exmachina-link-documentation",
+        "exmachina-link-security"
       ]
     },
     {
@@ -31,11 +31,11 @@
       "description": "多智能体任务板与阶段分配。",
       "consumers": [
         "exmachina-main",
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
+        "exmachina-link-knowledge",
+        "exmachina-link-rationality",
+        "exmachina-link-validation",
+        "exmachina-link-documentation",
+        "exmachina-link-security"
       ]
     },
     {
@@ -44,7 +44,7 @@
       "description": "知识交接与后续维护输入。",
       "consumers": [
         "exmachina-main",
-        "exmachina-primary"
+        "exmachina-link-knowledge"
       ]
     },
     {
@@ -53,11 +53,11 @@
       "description": "资源仲裁与升级规则。",
       "consumers": [
         "exmachina-main",
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
+        "exmachina-link-knowledge",
+        "exmachina-link-rationality",
+        "exmachina-link-validation",
+        "exmachina-link-documentation",
+        "exmachina-link-security"
       ]
     }
   ],
@@ -74,11 +74,11 @@
         "负责跨 agent 冲突裁决与风险升级。"
       ],
       "handoff_targets": [
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
+        "exmachina-link-knowledge",
+        "exmachina-link-rationality",
+        "exmachina-link-validation",
+        "exmachina-link-documentation",
+        "exmachina-link-security"
       ],
       "inbox_path": "runtime/agents/exmachina-main/inbox",
       "outbox_path": "runtime/agents/exmachina-main/outbox",
@@ -88,7 +88,7 @@
       ]
     },
     {
-      "agent_id": "exmachina-primary",
+      "agent_id": "exmachina-link-knowledge",
       "display_name": "ExMachina 主连结体 · 知识连结体",
       "runtime_role": "primary-link-body",
       "source": "知识连结体",
@@ -100,9 +100,9 @@
       "handoff_targets": [
         "exmachina-main"
       ],
-      "inbox_path": "runtime/agents/exmachina-primary/inbox",
-      "outbox_path": "runtime/agents/exmachina-primary/outbox",
-      "status_path": "runtime/agents/exmachina-primary/status.json",
+      "inbox_path": "runtime/agents/exmachina-link-knowledge/inbox",
+      "outbox_path": "runtime/agents/exmachina-link-knowledge/outbox",
+      "status_path": "runtime/agents/exmachina-link-knowledge/status.json",
       "assignments": [
         "assignment-stage-01",
         "assignment-stage-02",
@@ -110,7 +110,7 @@
       ]
     },
     {
-      "agent_id": "exmachina-support-1",
+      "agent_id": "exmachina-link-rationality",
       "display_name": "ExMachina 协作连结体 · 理性连结体",
       "runtime_role": "support-link-body",
       "source": "理性连结体",
@@ -120,17 +120,17 @@
       ],
       "handoff_targets": [
         "exmachina-main",
-        "exmachina-primary"
+        "exmachina-link-knowledge"
       ],
-      "inbox_path": "runtime/agents/exmachina-support-1/inbox",
-      "outbox_path": "runtime/agents/exmachina-support-1/outbox",
-      "status_path": "runtime/agents/exmachina-support-1/status.json",
+      "inbox_path": "runtime/agents/exmachina-link-rationality/inbox",
+      "outbox_path": "runtime/agents/exmachina-link-rationality/outbox",
+      "status_path": "runtime/agents/exmachina-link-rationality/status.json",
       "assignments": [
         "assignment-stage-03"
       ]
     },
     {
-      "agent_id": "exmachina-support-2",
+      "agent_id": "exmachina-link-validation",
       "display_name": "ExMachina 协作连结体 · 校验连结体",
       "runtime_role": "support-link-body",
       "source": "校验连结体",
@@ -140,17 +140,17 @@
       ],
       "handoff_targets": [
         "exmachina-main",
-        "exmachina-primary"
+        "exmachina-link-knowledge"
       ],
-      "inbox_path": "runtime/agents/exmachina-support-2/inbox",
-      "outbox_path": "runtime/agents/exmachina-support-2/outbox",
-      "status_path": "runtime/agents/exmachina-support-2/status.json",
+      "inbox_path": "runtime/agents/exmachina-link-validation/inbox",
+      "outbox_path": "runtime/agents/exmachina-link-validation/outbox",
+      "status_path": "runtime/agents/exmachina-link-validation/status.json",
       "assignments": [
         "assignment-support-validation"
       ]
     },
     {
-      "agent_id": "exmachina-support-3",
+      "agent_id": "exmachina-link-documentation",
       "display_name": "ExMachina 协作连结体 · 文档连结体",
       "runtime_role": "support-link-body",
       "source": "文档连结体",
@@ -160,17 +160,17 @@
       ],
       "handoff_targets": [
         "exmachina-main",
-        "exmachina-primary"
+        "exmachina-link-knowledge"
       ],
-      "inbox_path": "runtime/agents/exmachina-support-3/inbox",
-      "outbox_path": "runtime/agents/exmachina-support-3/outbox",
-      "status_path": "runtime/agents/exmachina-support-3/status.json",
+      "inbox_path": "runtime/agents/exmachina-link-documentation/inbox",
+      "outbox_path": "runtime/agents/exmachina-link-documentation/outbox",
+      "status_path": "runtime/agents/exmachina-link-documentation/status.json",
       "assignments": [
         "assignment-support-docs"
       ]
     },
     {
-      "agent_id": "exmachina-support-4",
+      "agent_id": "exmachina-link-security",
       "display_name": "ExMachina 协作连结体 · 安全连结体",
       "runtime_role": "support-link-body",
       "source": "安全连结体",
@@ -180,11 +180,11 @@
       ],
       "handoff_targets": [
         "exmachina-main",
-        "exmachina-primary"
+        "exmachina-link-knowledge"
       ],
-      "inbox_path": "runtime/agents/exmachina-support-4/inbox",
-      "outbox_path": "runtime/agents/exmachina-support-4/outbox",
-      "status_path": "runtime/agents/exmachina-support-4/status.json",
+      "inbox_path": "runtime/agents/exmachina-link-security/inbox",
+      "outbox_path": "runtime/agents/exmachina-link-security/outbox",
+      "status_path": "runtime/agents/exmachina-link-security/status.json",
       "assignments": [
         "assignment-support-security"
       ]
@@ -216,7 +216,7 @@
     {
       "assignment_id": "assignment-stage-01",
       "stage_name": "阶段 1 · 任务澄清",
-      "agent_id": "exmachina-primary",
+      "agent_id": "exmachina-link-knowledge",
       "source_body": "知识连结体",
       "role": "owner",
       "goal": "由 知识连结体 提供术语统一、决策沉淀、索引组织和问题归档的补位输入。",
@@ -235,7 +235,7 @@
     {
       "assignment_id": "assignment-stage-02",
       "stage_name": "阶段 2 · 主链路交付",
-      "agent_id": "exmachina-primary",
+      "agent_id": "exmachina-link-knowledge",
       "source_body": "知识连结体",
       "role": "owner",
       "goal": "形成任务主交付并对接协作链输入。",
@@ -258,7 +258,7 @@
     {
       "assignment_id": "assignment-stage-03",
       "stage_name": "阶段 3 · 交叉校验",
-      "agent_id": "exmachina-support-1",
+      "agent_id": "exmachina-link-rationality",
       "source_body": "理性连结体",
       "role": "owner",
       "goal": "完成证据分级、反证搜索、冲突裁决与置信度校准。",
@@ -280,7 +280,7 @@
     {
       "assignment_id": "assignment-stage-04",
       "stage_name": "阶段 4 · 集成交接",
-      "agent_id": "exmachina-primary",
+      "agent_id": "exmachina-link-knowledge",
       "source_body": "知识连结体",
       "role": "owner",
       "goal": "收束术语、决策、索引与未决问题。",
@@ -302,7 +302,7 @@
     {
       "assignment_id": "assignment-support-validation",
       "stage_name": "协作补位 · 校验连结体",
-      "agent_id": "exmachina-support-2",
+      "agent_id": "exmachina-link-validation",
       "source_body": "校验连结体",
       "role": "support",
       "goal": "补位验证、回归与证据归档。",
@@ -324,7 +324,7 @@
     {
       "assignment_id": "assignment-support-docs",
       "stage_name": "协作补位 · 文档连结体",
-      "agent_id": "exmachina-support-3",
+      "agent_id": "exmachina-link-documentation",
       "source_body": "文档连结体",
       "role": "support",
       "goal": "补位文档结构、示例编写与校订发布。",
@@ -346,7 +346,7 @@
     {
       "assignment_id": "assignment-support-security",
       "stage_name": "协作补位 · 安全连结体",
-      "agent_id": "exmachina-support-4",
+      "agent_id": "exmachina-link-security",
       "source_body": "安全连结体",
       "role": "support",
       "goal": "补位威胁建模、权限审计与加固建议。",
@@ -371,11 +371,11 @@
       "route_id": "route-dispatch",
       "from": "exmachina-main",
       "to": [
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
+        "exmachina-link-knowledge",
+        "exmachina-link-rationality",
+        "exmachina-link-validation",
+        "exmachina-link-documentation",
+        "exmachina-link-security"
       ],
       "purpose": "主控体派发阶段任务与补位请求。"
     },
@@ -383,17 +383,17 @@
       "route_id": "route-status",
       "from": "exmachina-main",
       "to": [
-        "exmachina-primary",
-        "exmachina-support-1",
-        "exmachina-support-2",
-        "exmachina-support-3",
-        "exmachina-support-4"
+        "exmachina-link-knowledge",
+        "exmachina-link-rationality",
+        "exmachina-link-validation",
+        "exmachina-link-documentation",
+        "exmachina-link-security"
       ],
       "purpose": "状态回流与交付同步。"
     },
     {
       "route_id": "route-stage-01",
-      "from": "exmachina-primary",
+      "from": "exmachina-link-knowledge",
       "to": [
         "exmachina-main"
       ],
@@ -401,7 +401,7 @@
     },
     {
       "route_id": "route-stage-02",
-      "from": "exmachina-primary",
+      "from": "exmachina-link-knowledge",
       "to": [
         "exmachina-main"
       ],
@@ -409,16 +409,16 @@
     },
     {
       "route_id": "route-stage-03",
-      "from": "exmachina-support-1",
+      "from": "exmachina-link-rationality",
       "to": [
         "exmachina-main",
-        "exmachina-primary"
+        "exmachina-link-knowledge"
       ],
       "purpose": "阶段 3 交叉校验回流。"
     },
     {
       "route_id": "route-stage-04",
-      "from": "exmachina-primary",
+      "from": "exmachina-link-knowledge",
       "to": [
         "exmachina-main"
       ],
@@ -426,34 +426,34 @@
     },
     {
       "route_id": "route-validation",
-      "from": "exmachina-support-2",
+      "from": "exmachina-link-validation",
       "to": [
         "exmachina-main",
-        "exmachina-primary"
+        "exmachina-link-knowledge"
       ],
       "purpose": "校验连结体交付回流。"
     },
     {
       "route_id": "route-docs",
-      "from": "exmachina-support-3",
+      "from": "exmachina-link-documentation",
       "to": [
         "exmachina-main",
-        "exmachina-primary"
+        "exmachina-link-knowledge"
       ],
       "purpose": "文档连结体交付回流。"
     },
     {
       "route_id": "route-security",
-      "from": "exmachina-support-4",
+      "from": "exmachina-link-security",
       "to": [
         "exmachina-main",
-        "exmachina-primary"
+        "exmachina-link-knowledge"
       ],
       "purpose": "安全连结体交付回流。"
     }
   ],
   "coordination_rules": [
-    "必须启用多 agent 绑定与外部路由。",
+      "必须启用子代理（subagents / sessions_spawn）。",
     "所有协作连结体产出必须回流主控体与主连结体。",
     "多智能体汇报需使用 [xx体]:xxx 格式。"
   ],
@@ -464,3 +464,4 @@
     "主控体汇总阶段 3 与协作补位结果，驱动阶段 4 集成交接。"
   ]
 }
+

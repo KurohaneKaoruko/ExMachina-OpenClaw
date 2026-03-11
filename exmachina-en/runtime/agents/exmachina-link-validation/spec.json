@@ -1,0 +1,36 @@
+{
+  "agent_id": "exmachina-link-validation",
+  "display_name": "ExMachina Support Link Body · Validation Link Body",
+  "runtime_role": "support-link-body",
+  "source": "Validation Link Body",
+  "workspace_dir": "{{EXMACHINA_PACK_ROOT}}",
+  "responsibilities": [
+    "Handle reproduction, assertions, evidence archiving, and regression validation."
+  ],
+  "handoff_targets": [
+    "exmachina-main",
+    "exmachina-link-knowledge"
+  ],
+  "inbox_path": "runtime/agents/exmachina-link-validation/inbox",
+  "outbox_path": "runtime/agents/exmachina-link-validation/outbox",
+  "status_path": "runtime/agents/exmachina-link-validation/status.json",
+  "assignments": [
+    "assignment-support-validation"
+  ],
+  "coordination_rules": [
+    "Multi-agent reporting must use the [xx-body]:xxx format.",
+    "Validation results must flow back to the controller and the primary link body."
+  ],
+  "operating_playbook": [
+    "Provide the validation matrix and regression results before submitting evidence archives."
+  ],
+  "escalation_triggers": [
+    "Flag for correction when reproductions fail or evidence is insufficient."
+  ],
+  "recommended_skill": {
+    "skill_id": "validation-link-body",
+    "skill_path": "../skills/validation-link-body/SKILL.md",
+    "purpose": "When the task primarily hits the Validation Link Body scope, provide the matching process, boundaries, and handoff templates."
+  }
+}
+

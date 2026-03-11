@@ -10,11 +10,11 @@
     "Resolve cross-agent conflicts and handle risk escalation."
   ],
   "handoff_targets": [
-    "exmachina-primary",
-    "exmachina-support-1",
-    "exmachina-support-2",
-    "exmachina-support-3",
-    "exmachina-support-4"
+    "exmachina-link-knowledge",
+    "exmachina-link-rationality",
+    "exmachina-link-validation",
+    "exmachina-link-documentation",
+    "exmachina-link-security"
   ],
   "inbox_path": "runtime/agents/exmachina-main/inbox",
   "outbox_path": "runtime/agents/exmachina-main/outbox",
@@ -23,7 +23,7 @@
     "assignment-controller"
   ],
   "coordination_rules": [
-    "Multi-agent binding and external routing must be enabled.",
+    "Subagents (sessions_spawn) must be enabled.",
     "Multi-agent reporting must use the [xx-body]:xxx format.",
     "Support link body outputs must flow back to the controller and the primary link body."
   ],
@@ -32,7 +32,7 @@
     "Continuously sync support-chain returns and drive Stage 4 integration handoff."
   ],
   "escalation_triggers": [
-    "Stop import if the host does not support multi-agent binding and routing.",
+    "Stop import if the host does not support subagents (sessions_spawn).",
     "Trigger arbitration when primary-chain and support-chain outputs conflict."
   ],
   "recommended_skill": {
@@ -41,3 +41,4 @@
     "purpose": "When the task primarily hits the Knowledge Link Body scope, provide the matching process, boundaries, and handoff templates."
   }
 }
+

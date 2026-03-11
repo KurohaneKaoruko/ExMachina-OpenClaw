@@ -1,0 +1,9 @@
+{
+  "agent_id": "exmachina-link-documentation",
+  "routes": [
+    "route-dispatch",
+    "route-status",
+    "route-docs"
+  ]
+}
+

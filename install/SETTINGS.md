@@ -4,7 +4,7 @@
 
 ## 导入规则
 - 必须先完成 `install/INTAKE.md` 的问询。
-- 宿主必须支持多 agent 绑定与外部路由。
+- 宿主必须支持子代理（subagents / sessions_spawn）。
 - ExMachina agent 必须继承 OpenClaw 当前默认模型。
 - 将 `exmachina-main` 的 `default` 设为 `true`（全连结指挥体作为默认入口）。
 - 不要修改 OpenClaw 现有 provider、API、默认模型与非 ExMachina 配置。
@@ -18,7 +18,7 @@
 - `{{EXMACHINA_PACK_ROOT}}`：仓库或导出包路径。
 
 ## 运行前置
-- 确认 bindings/路由已配置。
+- 确认 subagents allowlist 与子代理限额已配置（如需调整）。
 - 确认 workspace 路径已指向本仓库或导出包。
 - 目标 OpenClaw 配置文件建议先由宿主生成；需要新建最小配置时可在脚本中使用 `--allow-missing`。
 - 如果 `install/intake.template.json` 已填写 `target_config_path`，可在脚本中省略 `--target`。

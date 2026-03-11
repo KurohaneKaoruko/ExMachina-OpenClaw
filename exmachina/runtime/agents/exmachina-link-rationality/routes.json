@@ -1,0 +1,9 @@
+{
+  "agent_id": "exmachina-link-rationality",
+  "routes": [
+    "route-dispatch",
+    "route-status",
+    "route-stage-03"
+  ]
+}
+

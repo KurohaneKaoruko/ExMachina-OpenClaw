@@ -44,7 +44,7 @@
 
 1. 把仓库交给 OpenClaw 作为 workspace 打开。
 2. 先读取根目录 `PROMPT.md`。
-3. 按 `install/INTAKE.md` 问清语言、主控体显示名、配置路径、workspace 路径、宿主多 agent 能力与安装模式，并写入 `install/intake.template.json`。
+3. 按 `install/INTAKE.md` 问清语言、主控体显示名、配置路径、workspace 路径、宿主子代理能力与安装模式，并写入 `install/intake.template.json`。
 4. 通过 `install.sh --mode lite|full --pack exmachina --target <openclaw-config>`（或 `--lang zh`）、`install.ps1 --mode lite|full --pack exmachina --target <openclaw-config>`（或 `--lang zh`）、`install.cmd --mode lite|full --pack exmachina --target <openclaw-config>` 自动合并（脚本会调用 `install/apply-openclaw-settings.js`）；或按 `install/SETTINGS.md` 手动合并对应 settings：`exmachina/openclaw.settings.lite.json` 或 `exmachina/openclaw.settings.json`。
 5. 如果 `install/intake.template.json` 已填写 `target_config_path`，可省略 `--target`。
 6. 自动合并需要 Node.js；无 Node.js 时请手动合并。
@@ -52,7 +52,7 @@
 
 如需英文版，请改用 `PROMPT.en.md`、`install/INTAKE.en.md`、`install/SETTINGS.en.md`，并在脚本中使用 `--pack exmachina-en` 或 `--lang en`，入口为 `exmachina-en/BOOTSTRAP.md`。
 
-如果宿主不支持多 agent 绑定与外部路由，请停止安装。
+如果宿主不支持子代理（subagents / sessions_spawn），请停止安装。
 
 ---
 
@@ -93,7 +93,7 @@
 | 连结体建模 | 已实现 | 全连结指挥体、连结体、指挥体、子个体 |
 | 多智能体运行时 | 已实现 | 拓扑、任务板、agent 队列与回流 |
 | 设置导入模板 | 已实现 | OpenClaw settings-first 模板（lite / full） |
-| 安装问询 | 已实现 | 语言、主控体显示名、路径与多 agent 能力 |
+| 安装问询 | 已实现 | 语言、主控体显示名、路径与子代理能力 |
 | 运行时说明 | 已实现 | runtime 规则与协作口吻 |
 
 ---

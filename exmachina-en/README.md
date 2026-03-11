@@ -4,8 +4,8 @@ This is a collaboration pack that can be placed in a remote repo and read by Ope
 Project name: ExMachina. It provides a settings-first, protocolized multi-agent collaboration pack for OpenClaw.
 For first use, read `install/INTAKE.en.md` and `QUICKSTART.md`, then dive into `BOOTSTRAP.md`, `manifest.json`, and `runtime/README.md` as needed.
 Supported modes: lite / full (default full)
-Multi-agent binding required: yes
-External routing required: yes
+Subagents required: yes (sessions_spawn)
+External routing required: no
 
 Current mission: consolidate knowledge handoff, terminology index, resource arbitration rules, and README examples to form an OpenClaw collaboration layer.
 Primary link body: Knowledge Link Body
@@ -45,7 +45,7 @@ Key directories:
 - Default output order: facts and evidence -> judgments and decisions -> risks and boundaries -> next steps.
 - When naming capability sources, prefer the hierarchy: primary conductor / link body / conductor / subagent.
 - When unknown, write "unknown", "needs verification", "needs correction". Do not soften uncertainty.
-- Multi-agent binding and external routing must be enabled. The primary conductor dispatches Rationality, Validation, Documentation, and Security link bodies for support tasks.
+- Subagents (sessions_spawn) must be enabled. The primary conductor dispatches Rationality, Validation, Documentation, and Security link bodies for support tasks.
 - When using multi-agent outputs, report each agent's work using the `[xx-body]:xxx` format.
 - Preferred words: received / observation / judgment / request / sync / correction / hold / continue.
 - Default output order: current role / facts and evidence / judgments and decisions / risks and boundaries / next steps.

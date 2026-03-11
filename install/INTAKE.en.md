@@ -11,7 +11,7 @@ Before importing any OpenClaw configuration, you must ask the user the following
    Default: `~/.openclaw/openclaw.json`
 4. Workspace path: Which repository or export package path should be used as the workspace?
    Default: `{{EXMACHINA_PACK_ROOT}}`
-5. Host multi-agent capability: Does the host support multi-agent binding and external routing?
+5. Host subagent capability: Does the host support subagents (sessions_spawn)?
    Default: `Yes`
 6. Install mode: Choose `lite` (do not create subagent agents in OpenClaw, subagent responsibilities are executed inline by the link body) or `full` (create all subagent agents in OpenClaw).
    Default: `full`
@@ -20,8 +20,8 @@ Before importing any OpenClaw configuration, you must ask the user the following
 1. Other configuration: Any channels, tokens, workspace, or style settings to record?
 
 ## Blocking Rules
-- Do not import any settings patch before language, conductor display name, config path, workspace path, host multi-agent capability, and install mode are confirmed.
-- If the host does not support multi-agent binding and routing, do not import this template.
+- Do not import any settings patch before language, conductor display name, config path, workspace path, host subagent capability, and install mode are confirmed.
+- If the host does not support subagents (sessions_spawn), do not import this template.
 - ExMachina agents must inherit OpenClaw's current default model. Do not override default model, provider, API, or unrelated configuration.
 
 ## Recording

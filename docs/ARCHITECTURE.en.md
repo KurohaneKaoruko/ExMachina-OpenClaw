@@ -24,11 +24,11 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    M[Controller exmachina-main] --> P1[Primary Link Body exmachina-primary]
-    M --> S1[Support Link Body exmachina-support-1]
-    M --> S2[Support Link Body exmachina-support-2]
-    M --> S3[Support Link Body exmachina-support-3]
-    M --> S4[Support Link Body exmachina-support-4]
+    M[Controller exmachina-main] --> P1[Primary Link Body exmachina-link-knowledge]
+    M --> S1[Support Link Body exmachina-link-rationality]
+    M --> S2[Support Link Body exmachina-link-validation]
+    M --> S3[Support Link Body exmachina-link-documentation]
+    M --> S4[Support Link Body exmachina-link-security]
 
     P1 --> M
     S1 --> M
@@ -53,3 +53,4 @@ Note: lite mode uses the same link-body topology but does not create subagent ag
 - Topology, task board, and agent status in `runtime/` must remain consistent.
 - Multi-agent reporting must use the `[xx-body]:xxx` format.
 - Both lite and full modes are supported. Lite does not create subagent agents in OpenClaw; full creates all subagent agents.
+

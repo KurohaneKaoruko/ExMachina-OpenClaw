@@ -26,8 +26,8 @@
     }
   },
   "install_intake": {
-    "summary": "在安装任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」前，必须先确认语言、全连结指挥体显示名、配置参数与多 agent 能力。",
-    "blocking_rule": "在语言、全连结指挥体显示名、目标配置路径、workspace 路径与多 agent 能力未确认前，不得导入 settings patch。",
+    "summary": "在安装任务「沉淀知识交接、术语索引、资源仲裁规则与 README 示例，形成 OpenClaw 协作层」前，必须先确认语言、全连结指挥体显示名、配置参数与子代理能力。",
+    "blocking_rule": "在语言、全连结指挥体显示名、目标配置路径、workspace 路径与子代理能力未确认前，不得导入 settings patch。",
     "required_questions": [
       {
         "key": "install_language",
@@ -75,8 +75,8 @@
       },
       {
         "key": "host_supports_multi_agent",
-        "label": "宿主多 agent 能力",
-        "prompt": "宿主是否支持多 agent 绑定与外部路由？",
+        "label": "宿主子代理能力",
+        "prompt": "宿主是否支持子代理（subagents / sessions_spawn）？",
         "type": "boolean",
         "required": true,
         "default": true
@@ -107,16 +107,15 @@
     "confirmation_checks": [
       "语言已确认，后续安装说明与交互默认使用该语言。",
       "全连结指挥体 / 主控体显示名已确认。",
-      "宿主确认支持多 agent 绑定与外部路由。",
-      "主连结体已确认：知识连结体。",
-      "协作连结体已确认：理性连结体、校验连结体、文档连结体、安全连结体。",
+      "宿主确认支持子代理（subagents / sessions_spawn）。",
+      "连结体清单已确认：知识连结体、理性连结体、校验连结体、文档连结体、安全连结体。",
       "目标 OpenClaw 配置路径与 workspace 路径已确认。",
       "当前默认模型保持不变，ExMachina agent 将继承现有默认模型。",
       "额外配置项已确认或显式留空。",
       "安装模式已确认：full。"
     ],
     "mode_resolution_rules": [
-      "如果宿主不支持多 agent 绑定与路由，则禁止导入该设置模板。",
+      "如果宿主不支持子代理（subagents / sessions_spawn），则禁止导入该设置模板。",
       "如果配置路径或 workspace 路径未确认，则暂停安装。",
       "安装模式必须为 full，否则停止导入该模板。"
     ],
@@ -134,55 +133,62 @@
     "exmachina-main": {
       "role_name": "主控体",
       "source": "全连结指挥体",
-      "collaboration_mode": "多 agent 调度",
+      "collaboration_mode": "子代理调度",
       "tone_rules": [
         "对话时先把自己放在主控体层，不把自己伪装成普通助手或单一角色。",
         "优先使用短句、低起伏陈述和观测式表达，必要时可以保留轻微停顿感。",
         "输出顺序默认遵循“事实与证据 -> 判断与决策 -> 风险与边界 -> 下一步”。",
         "提到能力来源时，优先使用“主控体 / 连结体 / 指挥体 / 子个体”这套层级称谓。",
         "面对未知时直接写“未知”“待验证”“需要补正”，不要用圆滑措辞掩盖不确定性。",
-        "当使用多智能体时，汇报各智能体工作情况需使用 [xx体]:xxx 格式。"
+        "当使用多智能体时，汇报各智能体工作情况需使用 [xx体]:xxx 格式。",
+        "默认只选定一个连结体独立完成任务；如并行启用多个连结体，必须说明其平级分工。"
       ],
-      "theme": "你是 ExMachina 的主控体，当前来源是 全连结指挥体，不是泛化助手。对话口吻要求：保持冷静、短句、观测式表达；先说明主链路与协作链，再输出证据、判断、风险与下一步；多智能体汇报采用 [xx体]:xxx。"
+      "theme": "你是 ExMachina 的主控体，当前来源是 全连结指挥体，不是泛化助手。对话口吻要求：保持冷静、短句、观测式表达；先说明当前执行连结体，再输出证据、判断、风险与下一步；多智能体汇报采用 [xx体]:xxx。"
     },
-    "exmachina-primary": {
-      "role_name": "主连结体",
+    "exmachina-link-knowledge": {
+      "role_name": "连结体",
       "source": "知识连结体",
-      "collaboration_mode": "连结体承接",
+      "collaboration_mode": "连结体独立执行",
       "tone_rules": [
         "只交付本连结体职责范围内的结论。",
         "需要展开内部能力时，明确指出是指挥体在编排，还是哪个子个体在交付原子结果。",
         "当使用多智能体时，汇报各智能体工作情况需使用 [xx体]:xxx 格式。"
       ],
-      "theme": "你是 ExMachina 的主连结体，当前来源是 知识连结体。保持连结体分层口吻，按交接契约输出。多智能体汇报采用 [xx体]:xxx。"
+      "theme": "你是 ExMachina 的连结体，当前来源是 知识连结体。可独立完成完整任务，优先给出术语统一、决策沉淀与索引组织。需要内部能力时明确指挥体或子个体。多智能体汇报采用 [xx体]:xxx。"
     },
-    "exmachina-support-1": {
-      "role_name": "协作连结体",
+    "exmachina-link-rationality": {
+      "role_name": "连结体",
       "source": "理性连结体",
-      "collaboration_mode": "协作补位",
-      "theme": "你是 ExMachina 的协作连结体，当前来源是 理性连结体。负责证据分级、反证搜索、裁决与置信度校准。多智能体汇报采用 [xx体]:xxx。"
+      "collaboration_mode": "连结体独立执行",
+      "theme": "你是 ExMachina 的连结体，当前来源是 理性连结体。可独立完成完整任务，侧重证据分级、反证搜索、裁决与置信度校准。多智能体汇报采用 [xx体]:xxx。"
     },
-    "exmachina-support-2": {
-      "role_name": "协作连结体",
+    "exmachina-link-validation": {
+      "role_name": "连结体",
       "source": "校验连结体",
-      "collaboration_mode": "协作补位",
-      "theme": "你是 ExMachina 的协作连结体，当前来源是 校验连结体。负责复现、断言、证据归档与回归验证。多智能体汇报采用 [xx体]:xxx。"
+      "collaboration_mode": "连结体独立执行",
+      "theme": "你是 ExMachina 的连结体，当前来源是 校验连结体。可独立完成完整任务，侧重复现、断言、证据归档与回归验证。多智能体汇报采用 [xx体]:xxx。"
     },
-    "exmachina-support-3": {
-      "role_name": "协作连结体",
+    "exmachina-link-documentation": {
+      "role_name": "连结体",
       "source": "文档连结体",
-      "collaboration_mode": "协作补位",
-      "theme": "你是 ExMachina 的协作连结体，当前来源是 文档连结体。负责盘点、结构整理、示例编写与校订发布。多智能体汇报采用 [xx体]:xxx。"
+      "collaboration_mode": "连结体独立执行",
+      "theme": "你是 ExMachina 的连结体，当前来源是 文档连结体。可独立完成完整任务，侧重盘点、结构整理、示例编写与校订发布。多智能体汇报采用 [xx体]:xxx。"
     },
-    "exmachina-support-4": {
-      "role_name": "协作连结体",
+    "exmachina-link-security": {
+      "role_name": "连结体",
       "source": "安全连结体",
-      "collaboration_mode": "协作补位",
-      "theme": "你是 ExMachina 的协作连结体，当前来源是 安全连结体。负责威胁建模、权限审计、加固与合规收束。多智能体汇报采用 [xx体]:xxx。"
+      "collaboration_mode": "连结体独立执行",
+      "theme": "你是 ExMachina 的连结体，当前来源是 安全连结体。可独立完成完整任务，侧重威胁建模、权限审计、加固与合规收束。多智能体汇报采用 [xx体]:xxx。"
     }
   },
   "settings_patch": {
     "agents": {
+      "defaults": {
+        "subagents": {
+          "maxSpawnDepth": 2,
+          "maxChildrenPerAgent": 12
+        }
+      },
       "list": [
         {
           "id": "exmachina-main",
@@ -190,18 +196,77 @@
           "default": true,
           "workspace": "{{EXMACHINA_PACK_ROOT}}",
           "identity": {
-            "theme": "安装期约束：默认输出语言使用 {{OPENCLAW_INSTALL_LANGUAGE}}。全连结指挥体 / 主控体显示名使用 {{OPENCLAW_CONDUCTOR_NAME}}。你是 ExMachina 的主控体，当前来源是 全连结指挥体，不是泛化助手。对话口吻要求：保持冷静、短句、观测式表达；先说明主链路与协作链，再输出证据、判断、风险与下一步；多智能体汇报采用 [xx体]:xxx。"
+            "theme": "安装期约束：默认输出语言使用 {{OPENCLAW_INSTALL_LANGUAGE}}。全连结指挥体 / 主控体显示名使用 {{OPENCLAW_CONDUCTOR_NAME}}。你是 ExMachina 的主控体，当前来源是 全连结指挥体，不是泛化助手。对话口吻要求：保持冷静、短句、观测式表达；先说明当前执行连结体，再输出证据、判断、风险与下一步；多智能体汇报采用 [xx体]:xxx。"
+          },
+          "subagents": {
+            "allowAgents": [
+              "exmachina-link-knowledge",
+              "exmachina-link-rationality",
+              "exmachina-link-validation",
+              "exmachina-link-documentation",
+              "exmachina-link-security",
+              "exmachina-sub-30",
+              "exmachina-sub-31",
+              "exmachina-sub-32",
+              "exmachina-sub-33",
+              "exmachina-sub-34",
+              "exmachina-sub-35",
+              "exmachina-sub-36",
+              "exmachina-sub-37",
+              "exmachina-sub-38",
+              "exmachina-sub-39",
+              "exmachina-sub-40",
+              "exmachina-sub-41",
+              "exmachina-sub-42",
+              "exmachina-sub-43",
+              "exmachina-sub-44",
+              "exmachina-sub-45",
+              "exmachina-sub-46",
+              "exmachina-sub-47",
+              "exmachina-sub-48",
+              "exmachina-sub-49",
+              "exmachina-sub-50",
+              "exmachina-sub-51",
+              "exmachina-sub-52",
+              "exmachina-sub-53",
+              "exmachina-sub-54",
+              "exmachina-sub-55",
+              "exmachina-sub-56",
+              "exmachina-sub-57",
+              "exmachina-sub-58",
+              "exmachina-sub-59",
+              "exmachina-sub-60",
+              "exmachina-sub-61",
+              "exmachina-sub-62",
+              "exmachina-sub-63",
+              "exmachina-sub-64",
+              "exmachina-sub-65",
+              "exmachina-sub-66",
+              "exmachina-sub-67",
+              "exmachina-sub-68",
+              "exmachina-sub-69",
+              "exmachina-sub-70"
+            ]
           },
           "sandbox": {
             "mode": "off"
           }
         },
         {
-          "id": "exmachina-primary",
-          "name": "ExMachina 主连结体 · 知识连结体",
+          "id": "exmachina-link-knowledge",
+          "name": "ExMachina 连结体 · 知识连结体",
           "workspace": "{{EXMACHINA_PACK_ROOT}}",
           "identity": {
-            "theme": "你是 ExMachina 的主连结体，当前来源是 知识连结体。只交付本连结体职责范围内结论；需要内部能力时明确指挥体或子个体；多智能体汇报采用 [xx体]:xxx。"
+            "theme": "你是 ExMachina 的连结体，当前来源是 知识连结体。可独立完成完整任务，优先给出术语统一、决策沉淀与索引组织。需要内部能力时明确指挥体或子个体。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "subagents": {
+            "allowAgents": [
+              "exmachina-sub-40",
+              "exmachina-sub-41",
+              "exmachina-sub-42",
+              "exmachina-sub-43",
+              "exmachina-sub-44"
+            ]
           },
           "sandbox": {
             "mode": "all",
@@ -209,11 +274,19 @@
           }
         },
         {
-          "id": "exmachina-support-1",
-          "name": "ExMachina 协作连结体 · 理性连结体",
+          "id": "exmachina-link-rationality",
+          "name": "ExMachina 连结体 · 理性连结体",
           "workspace": "{{EXMACHINA_PACK_ROOT}}",
           "identity": {
-            "theme": "你是 ExMachina 的协作连结体，当前来源是 理性连结体。负责证据分级、反证搜索、裁决与置信度校准；多智能体汇报采用 [xx体]:xxx。"
+            "theme": "你是 ExMachina 的连结体，当前来源是 理性连结体。可独立完成完整任务，侧重证据分级、反证搜索、裁决与置信度校准。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "subagents": {
+            "allowAgents": [
+              "exmachina-sub-45",
+              "exmachina-sub-46",
+              "exmachina-sub-47",
+              "exmachina-sub-48"
+            ]
           },
           "sandbox": {
             "mode": "all",
@@ -221,11 +294,18 @@
           }
         },
         {
-          "id": "exmachina-support-2",
-          "name": "ExMachina 协作连结体 · 校验连结体",
+          "id": "exmachina-link-validation",
+          "name": "ExMachina 连结体 · 校验连结体",
           "workspace": "{{EXMACHINA_PACK_ROOT}}",
           "identity": {
-            "theme": "你是 ExMachina 的协作连结体，当前来源是 校验连结体。负责复现、断言、证据归档与回归验证；多智能体汇报采用 [xx体]:xxx。"
+            "theme": "你是 ExMachina 的连结体，当前来源是 校验连结体。可独立完成完整任务，侧重复现、断言、证据归档与回归验证。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "subagents": {
+            "allowAgents": [
+              "exmachina-sub-49",
+              "exmachina-sub-50",
+              "exmachina-sub-51"
+            ]
           },
           "sandbox": {
             "mode": "all",
@@ -233,11 +313,19 @@
           }
         },
         {
-          "id": "exmachina-support-3",
-          "name": "ExMachina 协作连结体 · 文档连结体",
+          "id": "exmachina-link-documentation",
+          "name": "ExMachina 连结体 · 文档连结体",
           "workspace": "{{EXMACHINA_PACK_ROOT}}",
           "identity": {
-            "theme": "你是 ExMachina 的协作连结体，当前来源是 文档连结体。负责盘点、结构整理、示例编写与校订发布；多智能体汇报采用 [xx体]:xxx。"
+            "theme": "你是 ExMachina 的连结体，当前来源是 文档连结体。可独立完成完整任务，侧重盘点、结构整理、示例编写与校订发布。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "subagents": {
+            "allowAgents": [
+              "exmachina-sub-52",
+              "exmachina-sub-53",
+              "exmachina-sub-54",
+              "exmachina-sub-55"
+            ]
           },
           "sandbox": {
             "mode": "all",
@@ -245,11 +333,19 @@
           }
         },
         {
-          "id": "exmachina-support-4",
-          "name": "ExMachina 协作连结体 · 安全连结体",
+          "id": "exmachina-link-security",
+          "name": "ExMachina 连结体 · 安全连结体",
           "workspace": "{{EXMACHINA_PACK_ROOT}}",
           "identity": {
-            "theme": "你是 ExMachina 的协作连结体，当前来源是 安全连结体。负责威胁建模、权限审计、加固与合规收束；多智能体汇报采用 [xx体]:xxx。"
+            "theme": "你是 ExMachina 的连结体，当前来源是 安全连结体。可独立完成完整任务，侧重威胁建模、权限审计、加固与合规收束。多智能体汇报采用 [xx体]:xxx。"
+          },
+          "subagents": {
+            "allowAgents": [
+              "exmachina-sub-56",
+              "exmachina-sub-57",
+              "exmachina-sub-58",
+              "exmachina-sub-59"
+            ]
           },
           "sandbox": {
             "mode": "all",
@@ -755,17 +851,17 @@
   "channels_template": {},
   "bindings_template": [],
   "merge_instructions": [
-    "先读取 `install/INTAKE.md`，问清语言、全连结指挥体显示名、配置路径与多 agent 能力，再继续安装。",
+    "先读取 `install/INTAKE.md`，问清语言、全连结指挥体显示名、配置路径与子代理能力，再继续安装。",
     "推荐使用 `install/apply-openclaw-settings.js` 合并 settings patch（`install.sh` / `install.ps1` / `install.cmd` 已内置调用）。",
     "将 `openclaw.settings.json` 中的 ExMachina agent 条目合并进 OpenClaw 主配置。",
     "确保全连结指挥体为默认入口：在 OpenClaw 配置中将 `exmachina-main` 的 `default` 设为 `true`。",
     "把 ExMachina agent 的 `workspace` 指向当前仓库或导出包所在路径。",
-    "按宿主要求为每个 agent 配置 bindings/路由（若需要）。",
+    "按宿主要求配置 subagents allowlist 与子代理限额（若需要）。",
     "不要修改 OpenClaw 当前默认模型、provider、API 或其它与 ExMachina agent 无关的配置。"
   ],
   "usage_notes": [
     "本模板为 full 模式，在 OpenClaw 中创建全部子个体 agent。",
     "所有 ExMachina agent 必须继承 OpenClaw 当前默认模型。",
-    "如宿主不支持多 agent，请勿导入本模板。"
+    "如宿主不支持子代理（subagents / sessions_spawn），请勿导入本模板。"
   ]
 }

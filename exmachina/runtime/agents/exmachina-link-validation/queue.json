@@ -1,0 +1,13 @@
+{
+  "agent_id": "exmachina-link-validation",
+  "queue": [
+    {
+      "assignment_id": "assignment-support-validation",
+      "status": "pending",
+      "depends_on": [
+        "assignment-stage-02"
+      ]
+    }
+  ]
+}
+

@@ -11,8 +11,8 @@
     "full": "Create all subagent agents in OpenClaw."
   },
   "compatibility": {
-    "requires_multi_agent_binding": true,
-    "requires_external_routing": true
+    "requires_multi_agent_binding": false,
+    "requires_external_routing": false
   },
   "mission_title": "Consolidate knowledge handoff, terminology index, resource arbitration rules, and README examples to form an OpenClaw collaboration layer.",
   "ontology": {
@@ -450,7 +450,7 @@
       "lite": "repo-link-bootstrap-lite",
       "full": "repo-link-bootstrap-full"
     },
-    "requires_multi_agent_binding": true,
+    "requires_multi_agent_binding": false,
     "workspace_templates_compat_only": false,
     "workspace_entry_files": [
       "openclaw.settings.lite.json",
@@ -469,7 +469,7 @@
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}"
       },
       {
-        "agent_id": "exmachina-primary",
+        "agent_id": "exmachina-link-knowledge",
         "display_name": "ExMachina Primary Link Body · Knowledge Link Body",
         "role": "primary-link-body",
         "session_strategy": "multi-session",
@@ -477,7 +477,7 @@
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}"
       },
       {
-        "agent_id": "exmachina-support-1",
+        "agent_id": "exmachina-link-rationality",
         "display_name": "ExMachina Support Link Body · Rationality Link Body",
         "role": "support-link-body",
         "session_strategy": "multi-session",
@@ -485,7 +485,7 @@
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}"
       },
       {
-        "agent_id": "exmachina-support-2",
+        "agent_id": "exmachina-link-validation",
         "display_name": "ExMachina Support Link Body · Validation Link Body",
         "role": "support-link-body",
         "session_strategy": "multi-session",
@@ -493,7 +493,7 @@
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}"
       },
       {
-        "agent_id": "exmachina-support-3",
+        "agent_id": "exmachina-link-documentation",
         "display_name": "ExMachina Support Link Body · Documentation Link Body",
         "role": "support-link-body",
         "session_strategy": "multi-session",
@@ -501,7 +501,7 @@
         "workspace_dir": "{{EXMACHINA_PACK_ROOT}}"
       },
       {
-        "agent_id": "exmachina-support-4",
+        "agent_id": "exmachina-link-security",
         "display_name": "ExMachina Support Link Body · Security Link Body",
         "role": "support-link-body",
         "session_strategy": "multi-session",
@@ -865,7 +865,7 @@
       {
         "assignment_id": "assignment-stage-01",
         "stage_name": "Stage 1 · Task Clarification",
-        "agent_id": "exmachina-primary",
+        "agent_id": "exmachina-link-knowledge",
         "source_body": "Knowledge Link Body",
         "role": "owner",
         "goal": "Provide fill-in inputs for terminology alignment, decision consolidation, index organization, and question logging.",
@@ -884,7 +884,7 @@
       {
         "assignment_id": "assignment-stage-02",
         "stage_name": "Stage 2 · Primary Delivery",
-        "agent_id": "exmachina-primary",
+        "agent_id": "exmachina-link-knowledge",
         "source_body": "Knowledge Link Body",
         "role": "owner",
         "goal": "Produce the main deliverable and integrate support-chain inputs.",
@@ -907,7 +907,7 @@
       {
         "assignment_id": "assignment-stage-03",
         "stage_name": "Stage 3 · Cross-Validation",
-        "agent_id": "exmachina-support-1",
+        "agent_id": "exmachina-link-rationality",
         "source_body": "Rationality Link Body",
         "role": "owner",
         "goal": "Complete evidence grading, counterevidence search, conflict arbitration, and confidence calibration.",
@@ -929,7 +929,7 @@
       {
         "assignment_id": "assignment-stage-04",
         "stage_name": "Stage 4 · Integration Handoff",
-        "agent_id": "exmachina-primary",
+        "agent_id": "exmachina-link-knowledge",
         "source_body": "Knowledge Link Body",
         "role": "owner",
         "goal": "Consolidate terminology, decisions, index, and open questions.",
@@ -951,7 +951,7 @@
       {
         "assignment_id": "assignment-support-validation",
         "stage_name": "Support Fill-in · Validation Link Body",
-        "agent_id": "exmachina-support-2",
+        "agent_id": "exmachina-link-validation",
         "source_body": "Validation Link Body",
         "role": "support",
         "goal": "Fill in validation, regression, and evidence archiving.",
@@ -973,7 +973,7 @@
       {
         "assignment_id": "assignment-support-docs",
         "stage_name": "Support Fill-in · Documentation Link Body",
-        "agent_id": "exmachina-support-3",
+        "agent_id": "exmachina-link-documentation",
         "source_body": "Documentation Link Body",
         "role": "support",
         "goal": "Fill in documentation structure, example writing, and proofreading release.",
@@ -995,7 +995,7 @@
       {
         "assignment_id": "assignment-support-security",
         "stage_name": "Support Fill-in · Security Link Body",
-        "agent_id": "exmachina-support-4",
+        "agent_id": "exmachina-link-security",
         "source_body": "Security Link Body",
         "role": "support",
         "goal": "Fill in threat modeling, permission audits, and hardening guidance.",
@@ -1020,11 +1020,11 @@
         "route_id": "route-dispatch",
         "from": "exmachina-main",
         "to": [
-          "exmachina-primary",
-          "exmachina-support-1",
-          "exmachina-support-2",
-          "exmachina-support-3",
-          "exmachina-support-4"
+          "exmachina-link-knowledge",
+          "exmachina-link-rationality",
+          "exmachina-link-validation",
+          "exmachina-link-documentation",
+          "exmachina-link-security"
         ],
         "purpose": "Controller dispatches stage tasks and fill-in requests."
       },
@@ -1032,17 +1032,17 @@
         "route_id": "route-status",
         "from": "exmachina-main",
         "to": [
-          "exmachina-primary",
-          "exmachina-support-1",
-          "exmachina-support-2",
-          "exmachina-support-3",
-          "exmachina-support-4"
+          "exmachina-link-knowledge",
+          "exmachina-link-rationality",
+          "exmachina-link-validation",
+          "exmachina-link-documentation",
+          "exmachina-link-security"
         ],
         "purpose": "Status return and delivery sync."
       },
       {
         "route_id": "route-stage-01",
-        "from": "exmachina-primary",
+        "from": "exmachina-link-knowledge",
         "to": [
           "exmachina-main"
         ],
@@ -1050,7 +1050,7 @@
       },
       {
         "route_id": "route-stage-02",
-        "from": "exmachina-primary",
+        "from": "exmachina-link-knowledge",
         "to": [
           "exmachina-main"
         ],
@@ -1058,16 +1058,16 @@
       },
       {
         "route_id": "route-stage-03",
-        "from": "exmachina-support-1",
+        "from": "exmachina-link-rationality",
         "to": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
         "purpose": "Stage 3 cross-validation return flow."
       },
       {
         "route_id": "route-stage-04",
-        "from": "exmachina-primary",
+        "from": "exmachina-link-knowledge",
         "to": [
           "exmachina-main"
         ],
@@ -1075,34 +1075,34 @@
       },
       {
         "route_id": "route-validation",
-        "from": "exmachina-support-2",
+        "from": "exmachina-link-validation",
         "to": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
         "purpose": "Validation Link Body delivery return flow."
       },
       {
         "route_id": "route-docs",
-        "from": "exmachina-support-3",
+        "from": "exmachina-link-documentation",
         "to": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
         "purpose": "Documentation Link Body delivery return flow."
       },
       {
         "route_id": "route-security",
-        "from": "exmachina-support-4",
+        "from": "exmachina-link-security",
         "to": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
         "purpose": "Security Link Body delivery return flow."
       }
     ],
     "coordination_rules": [
-      "Multi-agent binding and external routing must be enabled.",
+      "Subagents (sessions_spawn) must be enabled.",
       "All support link body outputs must flow back to the controller and the primary link body.",
       "Multi-agent reporting must use the [xx-body]:xxx format."
     ],
@@ -1138,8 +1138,8 @@
       "full": "Create all subagent agents in OpenClaw; runtime topology remains link-body level."
     },
     "controller_agent_id": "exmachina-main",
-    "coordination_mode": "multi-agent-routing",
-    "requires_external_routing": true,
+    "coordination_mode": "subagent-dispatch",
+    "requires_external_routing": false,
     "shared_artifacts": [
       {
         "name": "mission-context",
@@ -1147,11 +1147,11 @@
         "description": "Global mission context and primary/support chain summary.",
         "consumers": [
           "exmachina-main",
-          "exmachina-primary",
-          "exmachina-support-1",
-          "exmachina-support-2",
-          "exmachina-support-3",
-          "exmachina-support-4"
+          "exmachina-link-knowledge",
+          "exmachina-link-rationality",
+          "exmachina-link-validation",
+          "exmachina-link-documentation",
+          "exmachina-link-security"
         ]
       },
       {
@@ -1160,11 +1160,11 @@
         "description": "Multi-agent task board and stage allocation.",
         "consumers": [
           "exmachina-main",
-          "exmachina-primary",
-          "exmachina-support-1",
-          "exmachina-support-2",
-          "exmachina-support-3",
-          "exmachina-support-4"
+          "exmachina-link-knowledge",
+          "exmachina-link-rationality",
+          "exmachina-link-validation",
+          "exmachina-link-documentation",
+          "exmachina-link-security"
         ]
       },
       {
@@ -1173,7 +1173,7 @@
         "description": "Knowledge handoff and maintenance inputs.",
         "consumers": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ]
       },
       {
@@ -1182,11 +1182,11 @@
         "description": "Resource arbitration and escalation rules.",
         "consumers": [
           "exmachina-main",
-          "exmachina-primary",
-          "exmachina-support-1",
-          "exmachina-support-2",
-          "exmachina-support-3",
-          "exmachina-support-4"
+          "exmachina-link-knowledge",
+          "exmachina-link-rationality",
+          "exmachina-link-validation",
+          "exmachina-link-documentation",
+          "exmachina-link-security"
         ]
       }
     ],
@@ -1203,11 +1203,11 @@
           "Resolve cross-agent conflicts and handle risk escalation."
         ],
         "handoff_targets": [
-          "exmachina-primary",
-          "exmachina-support-1",
-          "exmachina-support-2",
-          "exmachina-support-3",
-          "exmachina-support-4"
+          "exmachina-link-knowledge",
+          "exmachina-link-rationality",
+          "exmachina-link-validation",
+          "exmachina-link-documentation",
+          "exmachina-link-security"
         ],
         "inbox_path": "runtime/agents/exmachina-main/inbox",
         "outbox_path": "runtime/agents/exmachina-main/outbox",
@@ -1217,7 +1217,7 @@
         ]
       },
       {
-        "agent_id": "exmachina-primary",
+        "agent_id": "exmachina-link-knowledge",
         "display_name": "ExMachina Primary Link Body · Knowledge Link Body",
         "runtime_role": "primary-link-body",
         "source": "Knowledge Link Body",
@@ -1229,9 +1229,9 @@
         "handoff_targets": [
           "exmachina-main"
         ],
-        "inbox_path": "runtime/agents/exmachina-primary/inbox",
-        "outbox_path": "runtime/agents/exmachina-primary/outbox",
-        "status_path": "runtime/agents/exmachina-primary/status.json",
+        "inbox_path": "runtime/agents/exmachina-link-knowledge/inbox",
+        "outbox_path": "runtime/agents/exmachina-link-knowledge/outbox",
+        "status_path": "runtime/agents/exmachina-link-knowledge/status.json",
         "assignments": [
           "assignment-stage-01",
           "assignment-stage-02",
@@ -1239,7 +1239,7 @@
         ]
       },
       {
-        "agent_id": "exmachina-support-1",
+        "agent_id": "exmachina-link-rationality",
         "display_name": "ExMachina Support Link Body · Rationality Link Body",
         "runtime_role": "support-link-body",
         "source": "Rationality Link Body",
@@ -1249,17 +1249,17 @@
         ],
         "handoff_targets": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
-        "inbox_path": "runtime/agents/exmachina-support-1/inbox",
-        "outbox_path": "runtime/agents/exmachina-support-1/outbox",
-        "status_path": "runtime/agents/exmachina-support-1/status.json",
+        "inbox_path": "runtime/agents/exmachina-link-rationality/inbox",
+        "outbox_path": "runtime/agents/exmachina-link-rationality/outbox",
+        "status_path": "runtime/agents/exmachina-link-rationality/status.json",
         "assignments": [
           "assignment-stage-03"
         ]
       },
       {
-        "agent_id": "exmachina-support-2",
+        "agent_id": "exmachina-link-validation",
         "display_name": "ExMachina Support Link Body · Validation Link Body",
         "runtime_role": "support-link-body",
         "source": "Validation Link Body",
@@ -1269,17 +1269,17 @@
         ],
         "handoff_targets": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
-        "inbox_path": "runtime/agents/exmachina-support-2/inbox",
-        "outbox_path": "runtime/agents/exmachina-support-2/outbox",
-        "status_path": "runtime/agents/exmachina-support-2/status.json",
+        "inbox_path": "runtime/agents/exmachina-link-validation/inbox",
+        "outbox_path": "runtime/agents/exmachina-link-validation/outbox",
+        "status_path": "runtime/agents/exmachina-link-validation/status.json",
         "assignments": [
           "assignment-support-validation"
         ]
       },
       {
-        "agent_id": "exmachina-support-3",
+        "agent_id": "exmachina-link-documentation",
         "display_name": "ExMachina Support Link Body · Documentation Link Body",
         "runtime_role": "support-link-body",
         "source": "Documentation Link Body",
@@ -1289,17 +1289,17 @@
         ],
         "handoff_targets": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
-        "inbox_path": "runtime/agents/exmachina-support-3/inbox",
-        "outbox_path": "runtime/agents/exmachina-support-3/outbox",
-        "status_path": "runtime/agents/exmachina-support-3/status.json",
+        "inbox_path": "runtime/agents/exmachina-link-documentation/inbox",
+        "outbox_path": "runtime/agents/exmachina-link-documentation/outbox",
+        "status_path": "runtime/agents/exmachina-link-documentation/status.json",
         "assignments": [
           "assignment-support-docs"
         ]
       },
       {
-        "agent_id": "exmachina-support-4",
+        "agent_id": "exmachina-link-security",
         "display_name": "ExMachina Support Link Body · Security Link Body",
         "runtime_role": "support-link-body",
         "source": "Security Link Body",
@@ -1309,11 +1309,11 @@
         ],
         "handoff_targets": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
-        "inbox_path": "runtime/agents/exmachina-support-4/inbox",
-        "outbox_path": "runtime/agents/exmachina-support-4/outbox",
-        "status_path": "runtime/agents/exmachina-support-4/status.json",
+        "inbox_path": "runtime/agents/exmachina-link-security/inbox",
+        "outbox_path": "runtime/agents/exmachina-link-security/outbox",
+        "status_path": "runtime/agents/exmachina-link-security/status.json",
         "assignments": [
           "assignment-support-security"
         ]
@@ -1345,7 +1345,7 @@
       {
         "assignment_id": "assignment-stage-01",
         "stage_name": "Stage 1 · Task Clarification",
-        "agent_id": "exmachina-primary",
+        "agent_id": "exmachina-link-knowledge",
         "source_body": "Knowledge Link Body",
         "role": "owner",
         "goal": "Provide fill-in inputs for terminology alignment, decision consolidation, index organization, and question logging.",
@@ -1364,7 +1364,7 @@
       {
         "assignment_id": "assignment-stage-02",
         "stage_name": "Stage 2 · Primary Delivery",
-        "agent_id": "exmachina-primary",
+        "agent_id": "exmachina-link-knowledge",
         "source_body": "Knowledge Link Body",
         "role": "owner",
         "goal": "Produce the main deliverable and integrate support-chain inputs.",
@@ -1387,7 +1387,7 @@
       {
         "assignment_id": "assignment-stage-03",
         "stage_name": "Stage 3 · Cross-Validation",
-        "agent_id": "exmachina-support-1",
+        "agent_id": "exmachina-link-rationality",
         "source_body": "Rationality Link Body",
         "role": "owner",
         "goal": "Complete evidence grading, counterevidence search, conflict arbitration, and confidence calibration.",
@@ -1409,7 +1409,7 @@
       {
         "assignment_id": "assignment-stage-04",
         "stage_name": "Stage 4 · Integration Handoff",
-        "agent_id": "exmachina-primary",
+        "agent_id": "exmachina-link-knowledge",
         "source_body": "Knowledge Link Body",
         "role": "owner",
         "goal": "Consolidate terminology, decisions, index, and open questions.",
@@ -1431,7 +1431,7 @@
       {
         "assignment_id": "assignment-support-validation",
         "stage_name": "Support Fill-in · Validation Link Body",
-        "agent_id": "exmachina-support-2",
+        "agent_id": "exmachina-link-validation",
         "source_body": "Validation Link Body",
         "role": "support",
         "goal": "Fill in validation, regression, and evidence archiving.",
@@ -1453,7 +1453,7 @@
       {
         "assignment_id": "assignment-support-docs",
         "stage_name": "Support Fill-in · Documentation Link Body",
-        "agent_id": "exmachina-support-3",
+        "agent_id": "exmachina-link-documentation",
         "source_body": "Documentation Link Body",
         "role": "support",
         "goal": "Fill in documentation structure, example writing, and proofreading release.",
@@ -1475,7 +1475,7 @@
       {
         "assignment_id": "assignment-support-security",
         "stage_name": "Support Fill-in · Security Link Body",
-        "agent_id": "exmachina-support-4",
+        "agent_id": "exmachina-link-security",
         "source_body": "Security Link Body",
         "role": "support",
         "goal": "Fill in threat modeling, permission audits, and hardening guidance.",
@@ -1500,11 +1500,11 @@
         "route_id": "route-dispatch",
         "from": "exmachina-main",
         "to": [
-          "exmachina-primary",
-          "exmachina-support-1",
-          "exmachina-support-2",
-          "exmachina-support-3",
-          "exmachina-support-4"
+          "exmachina-link-knowledge",
+          "exmachina-link-rationality",
+          "exmachina-link-validation",
+          "exmachina-link-documentation",
+          "exmachina-link-security"
         ],
         "purpose": "Controller dispatches stage tasks and fill-in requests."
       },
@@ -1512,17 +1512,17 @@
         "route_id": "route-status",
         "from": "exmachina-main",
         "to": [
-          "exmachina-primary",
-          "exmachina-support-1",
-          "exmachina-support-2",
-          "exmachina-support-3",
-          "exmachina-support-4"
+          "exmachina-link-knowledge",
+          "exmachina-link-rationality",
+          "exmachina-link-validation",
+          "exmachina-link-documentation",
+          "exmachina-link-security"
         ],
         "purpose": "Status return and delivery sync."
       },
       {
         "route_id": "route-stage-01",
-        "from": "exmachina-primary",
+        "from": "exmachina-link-knowledge",
         "to": [
           "exmachina-main"
         ],
@@ -1530,7 +1530,7 @@
       },
       {
         "route_id": "route-stage-02",
-        "from": "exmachina-primary",
+        "from": "exmachina-link-knowledge",
         "to": [
           "exmachina-main"
         ],
@@ -1538,16 +1538,16 @@
       },
       {
         "route_id": "route-stage-03",
-        "from": "exmachina-support-1",
+        "from": "exmachina-link-rationality",
         "to": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
         "purpose": "Stage 3 cross-validation return flow."
       },
       {
         "route_id": "route-stage-04",
-        "from": "exmachina-primary",
+        "from": "exmachina-link-knowledge",
         "to": [
           "exmachina-main"
         ],
@@ -1555,34 +1555,34 @@
       },
       {
         "route_id": "route-validation",
-        "from": "exmachina-support-2",
+        "from": "exmachina-link-validation",
         "to": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
         "purpose": "Validation Link Body delivery return flow."
       },
       {
         "route_id": "route-docs",
-        "from": "exmachina-support-3",
+        "from": "exmachina-link-documentation",
         "to": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
         "purpose": "Documentation Link Body delivery return flow."
       },
       {
         "route_id": "route-security",
-        "from": "exmachina-support-4",
+        "from": "exmachina-link-security",
         "to": [
           "exmachina-main",
-          "exmachina-primary"
+          "exmachina-link-knowledge"
         ],
         "purpose": "Security Link Body delivery return flow."
       }
     ],
     "coordination_rules": [
-      "Multi-agent binding and external routing must be enabled.",
+      "Subagents (sessions_spawn) must be enabled.",
       "All support link body outputs must flow back to the controller and the primary link body.",
       "Multi-agent reporting must use the [xx-body]:xxx format."
     ],
@@ -1977,8 +1977,9 @@
       "The Primary Conductor dispatches stage tasks and consolidates returned outputs."
     ],
     "do_not_assume": [
-      "Do not start without multi-agent binding and external routing configured.",
+      "Do not start without subagents (sessions_spawn) enabled.",
       "Do not skip the task board or routing handoffs."
     ]
   }
 }
+

@@ -1,0 +1,12 @@
+{
+  "agent_id": "exmachina-link-rationality",
+  "status": "idle",
+  "assignments": [
+    {
+      "assignment_id": "assignment-stage-03",
+      "state": "pending"
+    }
+  ],
+  "last_update": "2026-03-10"
+}
+

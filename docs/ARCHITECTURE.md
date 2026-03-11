@@ -24,11 +24,11 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    M[主控体 exmachina-main] --> P1[主连结体 exmachina-primary]
-    M --> S1[协作连结体 exmachina-support-1]
-    M --> S2[协作连结体 exmachina-support-2]
-    M --> S3[协作连结体 exmachina-support-3]
-    M --> S4[协作连结体 exmachina-support-4]
+    M[主控体 exmachina-main] --> P1[主连结体 exmachina-link-knowledge]
+    M --> S1[协作连结体 exmachina-link-rationality]
+    M --> S2[协作连结体 exmachina-link-validation]
+    M --> S3[协作连结体 exmachina-link-documentation]
+    M --> S4[协作连结体 exmachina-link-security]
 
     P1 --> M
     S1 --> M
@@ -54,3 +54,4 @@ flowchart LR
 - `runtime/` 中的拓扑、任务板与 agent 状态必须保持一致。
 - 多智能体汇报必须使用 `[xx体]:xxx` 格式。
 - 支持 lite / full 两种模式；lite 不在 OpenClaw 中创建子个体 agent，full 会创建全部子个体 agent。
+

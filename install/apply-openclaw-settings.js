@@ -165,27 +165,36 @@ function mergeObjects(base, override) {
   return result;
 }
 
-function resolveAgentList(config) {
+function resolveAgentContainer(config) {
   if (Array.isArray(config.agents)) {
-    return { list: config.agents, set: (list) => { config.agents = list; } };
+    return { type: "agents-array", list: config.agents, setList: (list) => { config.agents = list; } };
   }
   if (config.agents && Array.isArray(config.agents.list)) {
-    return { list: config.agents.list, set: (list) => { config.agents.list = list; } };
+    return { type: "agents.list", list: config.agents.list, setList: (list) => { config.agents.list = list; } };
   }
   if (config.agents && Array.isArray(config.agents.entries)) {
-    return { list: config.agents.entries, set: (list) => { config.agents.entries = list; } };
+    return { type: "agents.entries", list: config.agents.entries, setList: (list) => { config.agents.entries = list; } };
   }
   if (Array.isArray(config.agent_list)) {
-    return { list: config.agent_list, set: (list) => { config.agent_list = list; } };
+    return { type: "agent_list", list: config.agent_list, setList: (list) => { config.agent_list = list; } };
   }
   if (Array.isArray(config.agentList)) {
-    return { list: config.agentList, set: (list) => { config.agentList = list; } };
+    return { type: "agentList", list: config.agentList, setList: (list) => { config.agentList = list; } };
   }
-  if (!config.agents || typeof config.agents !== "object") {
+  if (config.agents && typeof config.agents === "object" && !Array.isArray(config.agents)) {
+    const entries = Object.entries(config.agents).filter(([key, value]) => {
+      if (key === "list" || key === "entries") return false;
+      return value && typeof value === "object" && (value.id || value.name);
+    });
+    if (entries.length) {
+      return { type: "agents-map", map: config.agents, setMap: (map) => { config.agents = map; } };
+    }
+  }
+  if (!config.agents || typeof config.agents !== "object" || Array.isArray(config.agents)) {
     config.agents = {};
   }
   config.agents.list = Array.isArray(config.agents.list) ? config.agents.list : [];
-  return { list: config.agents.list, set: (list) => { config.agents.list = list; } };
+  return { type: "agents.list", list: config.agents.list, setList: (list) => { config.agents.list = list; } };
 }
 
 function applySettings({ config, settings, intake, packRoot, mode }) {
@@ -221,55 +230,104 @@ function applySettings({ config, settings, intake, packRoot, mode }) {
     EXMACHINA_PACK_ROOT: workspaceRoot
   };
 
-  const patchAgents = settings?.settings_patch?.agents?.list;
+  const settingsPatch = settings?.settings_patch || {};
+  const templatedPatch = applyTemplate(settingsPatch, templateMap);
+  const patchAgents = templatedPatch?.agents?.list;
   if (!Array.isArray(patchAgents) || patchAgents.length === 0) {
     throw new Error("Settings patch does not include agents list.");
   }
 
-  const newAgents = applyTemplate(patchAgents, templateMap).map((agent) => {
+  if (templatedPatch && typeof templatedPatch === "object") {
+    const patchAgentsContainer = templatedPatch.agents;
+    if (patchAgentsContainer && typeof patchAgentsContainer === "object") {
+      const { list, entries, ...agentMeta } = patchAgentsContainer;
+      if (Object.keys(agentMeta).length) {
+        if (Array.isArray(config.agents)) {
+          config.agents = { list: config.agents };
+        } else if (!config.agents || typeof config.agents !== "object") {
+          config.agents = {};
+        }
+        config.agents = mergeObjects(config.agents, agentMeta);
+      }
+    }
+    const patchTop = { ...templatedPatch };
+    delete patchTop.agents;
+    if (Object.keys(patchTop).length) {
+      config = mergeObjects(config, patchTop);
+    }
+  }
+
+  const newAgents = patchAgents.map((agent) => {
     if (agent && typeof agent === "object" && agent.id && agent.id.startsWith("exmachina-")) {
       return { ...agent, workspace: workspaceRoot };
     }
     return agent;
   });
 
-  const listAccessor = resolveAgentList(config);
-  const list = listAccessor.list;
-  const indexById = new Map();
-  list.forEach((agent, index) => {
-    if (agent && agent.id) {
-      indexById.set(agent.id, index);
-    }
-  });
-
+  const container = resolveAgentContainer(config);
   let added = 0;
   let updated = 0;
+  let total = 0;
 
-  newAgents.forEach((agent) => {
-    if (!agent || !agent.id) return;
-    const existingIndex = indexById.get(agent.id);
-    if (existingIndex === undefined) {
-      list.push(agent);
-      indexById.set(agent.id, list.length - 1);
-      added += 1;
-      return;
-    }
-    const existing = list[existingIndex];
-    const merged = mergeObjects(existing, agent);
-    list[existingIndex] = merged;
-    updated += 1;
-  });
-
-  list.forEach((agent) => {
-    if (!agent || !agent.id || !agent.id.startsWith("exmachina-")) return;
-    if (agent.id === "exmachina-main") {
-      agent.default = true;
-      return;
-    }
-    if (agent.default === true) {
-      agent.default = false;
-    }
-  });
+  if (container.map) {
+    newAgents.forEach((agent) => {
+      if (!agent || !agent.id) return;
+      const existing = container.map[agent.id];
+      if (existing) {
+        container.map[agent.id] = mergeObjects(existing, agent);
+        updated += 1;
+      } else {
+        container.map[agent.id] = agent;
+        added += 1;
+      }
+    });
+    Object.values(container.map).forEach((agent) => {
+      if (!agent || !agent.id || !agent.id.startsWith("exmachina-")) return;
+      if (agent.id === "exmachina-main") {
+        agent.default = true;
+        return;
+      }
+      if (agent.default === true) {
+        agent.default = false;
+      }
+    });
+    total = Object.values(container.map).filter((agent) => agent && agent.id).length;
+    container.setMap(container.map);
+  } else {
+    const list = container.list;
+    const indexById = new Map();
+    list.forEach((agent, index) => {
+      if (agent && agent.id) {
+        indexById.set(agent.id, index);
+      }
+    });
+    newAgents.forEach((agent) => {
+      if (!agent || !agent.id) return;
+      const existingIndex = indexById.get(agent.id);
+      if (existingIndex === undefined) {
+        list.push(agent);
+        indexById.set(agent.id, list.length - 1);
+        added += 1;
+        return;
+      }
+      const existing = list[existingIndex];
+      const merged = mergeObjects(existing, agent);
+      list[existingIndex] = merged;
+      updated += 1;
+    });
+    list.forEach((agent) => {
+      if (!agent || !agent.id || !agent.id.startsWith("exmachina-")) return;
+      if (agent.id === "exmachina-main") {
+        agent.default = true;
+        return;
+      }
+      if (agent.default === true) {
+        agent.default = false;
+      }
+    });
+    total = list.length;
+    container.setList(list);
+  }
 
   if (Object.prototype.hasOwnProperty.call(config, "default_entry_agent_id")) {
     config.default_entry_agent_id = "exmachina-main";
@@ -289,15 +347,14 @@ function applySettings({ config, settings, intake, packRoot, mode }) {
     }
   }
 
-  listAccessor.set(list);
-
   return {
     config,
     report: {
       added,
       updated,
-      total: list.length,
-      mode
+      total,
+      mode,
+      container: container.type
     }
   };
 }
@@ -351,7 +408,7 @@ function main() {
   }
 
   if (intake.host_supports_multi_agent === false) {
-    fail("Host does not support multi-agent binding and routing. Aborting.");
+    fail("Host does not support subagents (sessions_spawn). Aborting.");
   }
 
   const settingsFile = path.join(packRoot, mode === "lite" ? "openclaw.settings.lite.json" : "openclaw.settings.json");
@@ -402,6 +459,9 @@ function main() {
   console.log(`- Agents added: ${report.added}`);
   console.log(`- Agents updated: ${report.updated}`);
   console.log(`- Agent total: ${report.total}`);
+  if (report.container) {
+    console.log(`- Agent container: ${report.container}`);
+  }
 
   if (options.dryRun) {
     console.log("Dry run: no file written.");
@@ -434,5 +494,5 @@ if (require.main === module) {
 module.exports = {
   applySettings,
   applyTemplate,
-  resolveAgentList
+  resolveAgentContainer
 };

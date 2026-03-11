@@ -1,0 +1,13 @@
+{
+  "agent_id": "exmachina-link-rationality",
+  "queue": [
+    {
+      "assignment_id": "assignment-stage-03",
+      "status": "pending",
+      "depends_on": [
+        "assignment-stage-02"
+      ]
+    }
+  ]
+}
+

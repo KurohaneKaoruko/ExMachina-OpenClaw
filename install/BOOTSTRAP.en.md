@@ -26,9 +26,9 @@ Recommended first reads:
 3. Record answers in `install/intake.template.en.json`. Do not import any configuration before confirmation.
 4. Select the settings template by mode: `lite` uses `exmachina-en/openclaw.settings.lite.json`; `full` uses `exmachina-en/openclaw.settings.json`.
 5. Read `install/SETTINGS.en.md` and apply the settings patch with `install/apply-openclaw-settings.js` (or `install.sh` / `install.ps1` / `install.cmd`).
-6. Confirm the host has multi-agent binding and external routing enabled.
+6. Confirm the host supports subagents (sessions_spawn).
 7. Return to `exmachina-en/BOOTSTRAP.md` and execute by the selected mode.
 
 If you need the Chinese pack, use `PROMPT.md`, `install/INTAKE.md`, and `install/SETTINGS.md`, run scripts with `--pack exmachina` or `--lang zh`, and enter `exmachina/BOOTSTRAP.md`.
 
-If the environment does not support multi-agent binding and routing, stop installation and tell the user to switch hosts.
+If the environment does not support subagents (sessions_spawn), stop installation and tell the user to switch hosts.

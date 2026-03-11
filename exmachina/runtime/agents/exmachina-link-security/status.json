@@ -1,0 +1,12 @@
+{
+  "agent_id": "exmachina-link-security",
+  "status": "idle",
+  "assignments": [
+    {
+      "assignment_id": "assignment-support-security",
+      "state": "pending"
+    }
+  ],
+  "last_update": "2026-03-10"
+}
+

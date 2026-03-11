@@ -1,8 +1,0 @@
-{
-  "agent_id": "exmachina-support-4",
-  "routes": [
-    "route-dispatch",
-    "route-status",
-    "route-security"
-  ]
-}
